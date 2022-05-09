@@ -10,3 +10,4 @@ Our airbrake will be controlled by stepper motors with a gear increase for torqu
 For more information on the Altus Metrum Telemega visit https://altusmetrum.org/
 
 Thank you to Bdale Garbee for his help in the development process and for designing the Telemega https://gag.com/bdale/
+
