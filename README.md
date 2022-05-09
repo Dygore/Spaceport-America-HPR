@@ -1,4 +1,4 @@
-# Spaceport-America-HPR
+# Oklahoma State University High Powered Rocketry Spaceport America
 
 <img src="https://rocketry.okstate.edu/sites/default/files/OSU%20AIAA%20ROCKETRY%20logo.png" width="250">
 
