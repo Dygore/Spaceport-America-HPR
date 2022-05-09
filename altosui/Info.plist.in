@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+	<key>CFBundleName</key>
+	<string>AltosUI</string>
+	<key>CFBundleVersion</key>
+	<string>@VERSION@</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<string>true</string>
+	<key>CFBundleExecutable</key>
+	<string>JavaApplicationStub</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.altusmetrum.altosui</string>
+	<key>CFBundleSignature</key>
+	<string>Altu</string>
+	<key>CFBundleGetInfoString</key>
+	<string>AltOS UI version @VERSION@</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleIconFile</key>
+	<string>altusmetrum-altosui.icns</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+	  <dict>
+	    <key>CFBundleTypeName</key>
+	    <string>Telemetry</string>
+	    <key>CFBundleTypeIconFile</key>
+	    <string>application-vnd.altusmetrum.telemetry.icns</string>
+	    <key>CFBundleTypeExtensions</key>
+	    <array>
+	      <string>telem</string>
+	    </array>
+	    <key>CFBundleTypeRole</key>
+	    <string>Editor</string>
+	  </dict>
+	  <dict>
+	    <key>CFBundleTypeName</key>
+	    <string>Eeprom</string>
+	    <key>CFBundleTypeIconFile</key>
+	    <string>application-vnd.altusmetrum.eeprom.icns</string>
+	    <key>CFBundleTypeExtensions</key>
+	    <array>
+	      <string>eeprom</string>
+	    </array>
+	    <key>CFBundleTypeRole</key>
+	    <string>Editor</string>
+	  </dict>
+	</array>
+	<key>Java</key>
+	<dict>
+		<key>MainClass</key>
+		<string>altosui.AltosUI</string>
+		<key>JVMVersion</key>
+		<string>1.5+</string>
+		<key>ClassPath</key>
+		<array>
+			<string>$JAVAROOT/altosui.jar</string>
+			<string>$JAVAROOT/freetts.jar</string>
+		</array>
+		<key>VMOptions</key>
+		<array>
+		  <string>-Xms512M</string>
+		  <string>-Xmx512M</string>
+		  <string>-Dosgi.clean=true</string>
+		</array>
+	</dict>
+</dict>
+</plist>

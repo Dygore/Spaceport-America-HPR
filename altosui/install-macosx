@@ -1,0 +1,55 @@
+#!/bin/bash
+
+JVM=/Library/Java/JavaVirtualMachines
+dir=`dirname "$0"`
+
+case `id -u` in
+    0)
+    ;;
+    *)
+	SUDO_ASKPASS="${dir}/ask-pass" sudo -A "$0" "$@"
+	case $? in
+	    0)
+	    ;;
+	    *)
+		osascript -e 'display dialog "Installation failed. Incorrect password?" buttons {"OK"} default button 1 with title "Installation Status"' > /dev/null
+		;;
+	esac
+	exit 0
+	;;
+esac
+
+# Check for java
+if ls "$JVM" | grep -q temurin; then
+    echo "Adoptium already present"
+else
+    open https://adoptium.net/
+    osascript -e 'display dialog "Install Java from https://adoptium.net then click Continue" buttons {"Continue"} default button 1 with title "Install Java"' >/dev/null
+fi
+
+cd "$dir"
+LIBRARY=/Library/AltusMetrum
+APPLICATIONS=/Applications
+INSTALLED=
+for file in *; do
+    echo 'Installing' "$file"
+    case "$file" in
+	*.app)
+	    mkdir -p "${APPLICATIONS}"
+	    if [ -d "${APPLICATIONS}/${file}" ]; then
+		rm -rf "${APPLICATIONS}/${file}"
+	    fi
+	    cp -a "$file" "${APPLICATIONS}/${file}"
+	    chmod -R +w "${APPLICATIONS}/${file}"
+	    xattr -rc "${APPLICATIONS}/${file}"
+	    APP=`basename "$file" .app`
+	    INSTALLED="${INSTALLED} ${APP}"
+	    ;;
+	*)
+	    mkdir -p "${LIBRARY}"
+	    cp -a "$file" "${LIBRARY}"
+	    ;;
+    esac
+done
+open "${LIBRARY}"
+osascript -e 'display dialog "Installation of'"${INSTALLED}"' complete" with title "Installation Complete" buttons {"OK"} default button 1' >/dev/null

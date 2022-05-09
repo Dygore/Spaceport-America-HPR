@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=AltOS UI
+GenericName=Altus Metrum Ground Station
+Comment=View and log downlink data from Altus Metrum products
+Icon=%icondir%/altusmetrum-altosui.svg
+Exec=%bindir%/altosui %F
+Terminal=false
+MimeType=application/vnd.altusmetrum.telemetry;application/vnd.altusmetrum.eeprom
+Categories=Education;Electronics;Science;
+Keywords=Rocket;Telemetry;GPS
