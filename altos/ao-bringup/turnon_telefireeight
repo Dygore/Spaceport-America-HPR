@@ -1,0 +1,74 @@
+#!/bin/sh
+
+PRODUCT=TeleFireEight
+VERSION=2.0
+REPO=~/altusmetrumllc/Binaries
+
+if [ -x /usr/bin/ao-flash-stm ]; then
+	FLASH_STM=/usr/bin/ao-flash-stm
+else
+	echo "Can't find ao-flash-stm!  Aborting."
+	exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2019 by Bdale Garbee.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION"
+echo "\t\twith USB cable attached"
+echo "\t\twith ST-Link-V2 cabled to debug header"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+echo $FLASH_STM
+
+$FLASH_STM $REPO/loaders/telefireeight-v$VERSION*.elf
+
+sleep 3
+
+$USBLOAD --serial=$SERIAL $REPO/telefireeight-v$VERSION*.elf || exit 1
+
+sleep 5
+
+dev=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "$PRODUCT found on $dev"
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+SERIAL=$SERIAL ./cal-freq $dev
+echo 'E 1' > $dev
+
+echo "$PRODUCT-v$VERSION" serial "$SERIAL" is ready for integration and testing
+echo "\007"
+
+exit $?

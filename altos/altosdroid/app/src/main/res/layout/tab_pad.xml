@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright © 2013 Mike Beattie <mike@ethernal.org>
+
+     This program is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License along
+     with this program; if not, write to the Free Software Foundation, Inc.,
+     59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+-->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+  <TableLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:stretchColumns="2,3"
+      android:layout_weight="0"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      
+      <ImageView
+	  android:id="@+id/battery_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/battery_voltage_label"
+	  android:src="@drawable/grayled"
+	  />
+
+      <ImageView
+	  android:id="@+id/battery_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:contentDescription="@string/battery_voltage_label"
+	  android:paddingRight="5dp"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/battery_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/battery_voltage_label" />
+
+      <TextView
+	  android:id="@+id/battery_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall"
+	  />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/receiver_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+
+      <ImageView
+	  android:id="@+id/receiver_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/receiver_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/receiver_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/receiver_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/receiver_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/receiver_voltage_label" />
+
+      <TextView
+	  android:id="@+id/receiver_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/logging_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/logging_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/logging_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/logging_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/logging_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/logging_label" />
+
+      <TextView
+	  android:id="@+id/logging_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_below="@id/logging_label"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/gps_locked_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/gps_locked_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/gps_locked_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/gps_locked_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/gps_locked_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/gps_locked_label" />
+
+      <TextView
+	  android:id="@+id/gps_locked_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_below="@id/gps_locked_label"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/gps_ready_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/gps_ready_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/gps_ready_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/gps_ready_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/gps_ready_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/gps_ready_label" />
+
+      <TextView
+	  android:id="@+id/gps_ready_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_below="@id/gps_ready_label"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/apogee_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+
+      <ImageView
+	  android:id="@+id/apogee_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/apogee_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/apogee_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/apogee_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/apogee_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/apogee_voltage_label" />
+
+      <TextView
+	  android:id="@+id/apogee_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/main_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/main_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/main_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/main_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/main_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/main_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/main_voltage_label" />
+
+      <TextView
+	  android:id="@+id/main_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/ignite_a_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/ignite_a_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_a_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/ignite_a_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_a_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/ignite_a_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/ignite_a_voltage_label" />
+
+      <TextView
+	  android:id="@+id/ignite_a_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/ignite_b_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/ignite_b_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_b_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/ignite_b_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_b_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/ignite_b_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/ignite_b_voltage_label" />
+
+      <TextView
+	  android:id="@+id/ignite_b_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/ignite_c_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/ignite_c_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_c_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/ignite_c_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_c_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/ignite_c_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/ignite_c_voltage_label" />
+
+      <TextView
+	  android:id="@+id/ignite_c_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/ignite_d_row"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+
+      <ImageView
+	  android:id="@+id/ignite_d_redled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_d_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <ImageView
+	  android:id="@+id/ignite_d_greenled"
+	  android:layout_width="match_parent"
+	  android:layout_height="match_parent"
+	  android:scaleType="centerInside"
+	  android:paddingRight="5dp"
+	  android:contentDescription="@string/ignite_d_voltage_label"
+	  android:src="@drawable/grayled" />
+
+      <TextView
+	  android:id="@+id/ignite_d_voltage_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/ignite_d_voltage_label" />
+
+      <TextView
+	  android:id="@+id/ignite_d_voltage_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:id="@+id/tilt_view"
+	android:visibility="gone"
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	>
+
+	<TextView
+	    android:id="@+id/tilt_label"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_column="2"
+	    android:text="@string/tilt_label" />
+
+	<TextView
+	    android:id="@+id/tilt_value"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text=""
+	    android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+
+      <TextView
+	  android:id="@+id/receiver_lat_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_column="2"
+	  android:text="@string/receiver_latitude_label" />
+
+      <TextView
+	  android:id="@+id/receiver_lat_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+
+      <TextView
+	  android:id="@+id/receiver_lon_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_column="2"
+	  android:text="@string/receiver_longitude_label" />
+
+      <TextView
+	  android:id="@+id/receiver_lon_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+
+    <TableRow
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+
+      <TextView
+	  android:id="@+id/receiver_alt_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_column="2"
+	  android:text="@string/receiver_altitude_label" />
+
+      <TextView
+	  android:id="@+id/receiver_alt_value"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text=""
+	  android:textAppearance="?android:attr/textAppearanceSmall" />
+    </TableRow>
+  </TableLayout>
+</LinearLayout>

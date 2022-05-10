@@ -1,0 +1,7 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+include $(TOPDIR)/stm/Makefile-stm.defs
+
+LDFLAGS=$(CFLAGS) -L$(TOPDIR)/stm -Taltos.ld -n

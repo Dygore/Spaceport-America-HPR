@@ -1,0 +1,143 @@
+OS:=$(shell uname)
+
+#
+# Linux
+#
+ifeq ($(OS),Linux)
+
+OS_SRCS=libaltos_posix.c libaltos_linux.c
+
+JAVA_CFLAGS=-I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux
+
+OS_LIB_CFLAGS=-DLINUX -DPOSIX_TTY $(JAVA_CFLAGS) -shared -fPIC
+
+OS_APP_CFLAGS=$(OS_LIB_CFLAGS)
+
+OS_LDFLAGS=
+
+LIBNAME=libaltos.so
+EXEEXT=
+endif
+
+#
+# Darwin (Mac OS X)
+#
+ifeq ($(OS),Darwin)
+
+OS_SRCS=libaltos_posix.c libaltos_darwin.c
+
+#OS_LIB_CFLAGS=\
+#	-DDARWIN -DPOSIX_TTY -arch i386 -arch x86_64 \
+#	--sysroot=/Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 \
+#	-iwithsysroot /System/Library/Frameworks/JavaVM.framework/Headers \
+#	-iwithsysroot /System/Library/Frameworks/IOKit.framework/Headers \
+#	-iwithsysroot /System/Library/Frameworks/CoreFoundation.framework/Headers
+
+XCODE=/Applications/Xcode.app
+SDK=$(XCODE)/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+MINVERSION=10.5
+
+OS_LIB_CFLAGS=\
+	-DDARWIN -DPOSIX_TTY -arch x86_64 -arch arm64 -isysroot $(SDK) \
+	-mmacosx-version-min=10.5 \
+	-iwithsysroot /System/Library/Frameworks/JavaVM.framework/Headers \
+	-iwithsysroot /System/Library/Frameworks/IOKit.framework/Headers \
+	-iwithsysroot /System/Library/Frameworks/CoreFoundation.framework/Headers
+OS_APP_CFLAGS=$(OS_LIB_CFLAGS) -O0 -g
+
+OS_LDFLAGS =\
+	-framework IOKit -framework CoreFoundation
+
+LIBNAME=libaltos.dylib
+EXEEXT=
+
+endif
+
+#
+# Windows
+#
+ifneq (,$(findstring MINGW,$(OS)))
+
+OS_SRCS=libaltos_windows.c
+
+CC=gcc
+
+OS_LIB_CFLAGS = -DWINDOWS -mconsole -DBUILD_DLL
+OS_APP_CFLAGS = -DWINDOWS -mconsole
+
+OS_LDFLAGS = -lgdi32 -luser32 -lcfgmgr32 -lsetupapi -lole32 \
+	-ladvapi32 -lcomctl32 -mconsole -Wl,--add-stdcall-alias
+
+LIBNAME=altos.dll
+
+EXEEXT=.exe
+
+endif
+
+.SUFFIXES: .java .class
+
+CLASSPATH=".:jnitest/*:libaltosJNI:/usr/share/java/*"
+
+SWIG_DIR=swig_bindings/java
+SWIG_FILE=$(SWIG_DIR)/libaltos.swig
+SWIG_WRAP=$(SWIG_DIR)/libaltos_wrap.c
+
+JNI_DIR=libaltosJNI
+JNI_FILE=$(JNI_DIR)/libaltosJNI.java
+JNI_SRCS=$(JNI_FILE) \
+	$(JNI_DIR)/SWIGTYPE_p_altos_file.java \
+	$(JNI_DIR)/SWIGTYPE_p_altos_list.java \
+	$(JNI_DIR)/altos_device.java \
+	$(JNI_DIR)/libaltos.java
+
+JAVAFILES=\
+	$(JNI_SRCS)
+
+CLASSFILES = $(JAVAFILES:%.java=%.class)
+
+JAVAFLAGS=-Xlint:unchecked
+
+CJNITEST=cjnitest$(EXEEXT)
+
+all: $(LIBNAME) $(CJNITEST) $(CLASSFILES)
+
+.java.class:
+	javac -encoding UTF8 -classpath "$(CLASSPATH)" $(JAVAFLAGS) $*.java
+
+CFLAGS=$(OS_LIB_CFLAGS) -O -I.
+
+LDFLAGS=$(OS_LDFLAGS)
+
+HEADERS=libaltos.h
+SRCS = libaltos_common.c $(OS_SRCS) $(SWIG_WRAP)
+OBJS = $(SRCS:%.c=%.o)
+LIBS = $(DARWIN_LIBS)
+
+$(CJNITEST): cjnitest.c $(LIBNAME)
+	$(CC) -o $@ $(OS_APP_CFLAGS) cjnitest.c $(LIBNAME) $(LIBS) $(LDFLAGS)
+
+$(LIBNAME): $(OBJS)
+	$(CC) -shared -fPIC $(CFLAGS) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
+
+clean:
+	rm -f $(CLASSFILES) $(OBJS) $(LIBNAME) $(CJNITEST) cjnitest.o
+	rm -rf swig_bindings libaltosJNI
+
+distclean:	clean
+
+$(JNI_FILE): libaltos.i0 $(HEADERS)
+	mkdir -p $(SWIG_DIR)
+	mkdir -p libaltosJNI
+	sed 's;//%;%;' libaltos.i0 $(HEADERS) > $(SWIG_FILE)
+	swig -java -package libaltosJNI $(SWIG_FILE)
+	cp swig_bindings/java/*.java libaltosJNI
+
+$(SWIG_WRAP): $(JNI_FILE)
+
+ifeq ($(OS),Linux)
+install:	$(LIBNAME)
+	install -c $(LIBNAME) $(DESTDIR)/usr/lib/altos/$(LIBNAME)
+
+endif
+
+.NOTPARALLEL:

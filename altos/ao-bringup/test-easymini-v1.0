@@ -1,0 +1,62 @@
+#!/bin/bash
+
+VERSION=1.0
+PRODUCT=EasyMini
+BASE=`echo $PRODUCT | tr 'A-Z' 'a-z'`
+
+echo "$PRODUCT-v$VERSION Test Program"
+echo "Copyright 2014 by Keith Packard.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo -e "\t$PRODUCT v$VERSION powered from USB"
+echo
+
+found=0
+while [ $found -eq 0 ]; do
+    (ao-list; echo END END END END) | while read product serial dev; do
+	case "$product" in
+	    "$PRODUCT-v$VERSION")
+
+		found=1
+		echo -e '\e[34m'Testing $product $serial $dev'\e[39m'
+		echo ""
+		
+		sleep 2
+
+		./test-igniters-nowait "$dev" drogue main
+		echo ""
+
+		echo "Testing baro sensor"
+		../ao-tools/ao-test-baro/ao-test-baro --tty="$dev"
+
+		if [ $? -ne 0 ]; then
+		    echo -e '\e[31m'"$PRODUCT-$VERSION serial $serial failed"'\e[39m'
+		    exit 1
+		fi
+		echo""
+
+		FLASHSIZE=1048576
+
+		echo "Testing flash"
+		../ao-tools/ao-test-flash/ao-test-flash --tty="$dev" "$FLASHSIZE"
+
+		if [ $? -ne 0 ]; then
+		    echo -e '\e[31m'"$PRODUCT-$VERSION serial $serial failed"'\e[39m'
+		    exit 1
+		fi
+		echo ""
+
+		echo -e '\e[32m'"$PRODUCT-v$VERSION" serial "$serial" is ready to ship'\e[39m'
+		exit 0
+		;;
+	    END)
+		exit 2
+		;;
+	esac
+    done
+    result=$?
+    if [ $result -ne 2 ]; then
+	exit $result
+    fi
+    sleep 0.25
+done

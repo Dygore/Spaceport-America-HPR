@@ -1,0 +1,22 @@
+#!/bin/bash
+NEW_PATH=`echo $PATH | sed 's/^[^:]*://'`
+PATH=$NEW_PATH
+CC=gcc
+args=()
+for i in "$@"; do
+    case "$i" in
+	-Wl,arch=*)
+	    arch=`echo "$i" | sed -e 's/^-Wl,arch=//'`
+	    CC="$arch"-gcc
+	    ;;
+	-Warch=*)
+	    arch=`echo "$i" | sed -e 's/^-Warch=//'`
+	    CC="$arch"-gcc
+	    ;;
+	*)
+	    args+=( "$i" )
+	    ;;
+    esac
+done
+echo "          " "$CC" "${args[@]}"
+exec "$CC" "${args[@]}"

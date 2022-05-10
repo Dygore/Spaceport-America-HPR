@@ -1,0 +1,11 @@
+.gradle
+.idea
+build/
+app/build/
+app/libs/
+app/app.iml
+altosdroid.iml
+local.properties
+app/src/main/AndroidManifest.xml
+app/src/main/java/org/altusmetrum/AltosDroid/BuildInfo.java
+app/src/main/res/drawable/*led.png

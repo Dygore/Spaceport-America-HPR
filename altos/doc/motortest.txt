@@ -1,0 +1,29 @@
+= Motor Testing: Static and In-Flight Motor Performance Testing
+Bdale Garbee <bdale@gag.com>
+:title-logo-image: image:../themes/background.png[]
+:revnumber: v{version}
+:revdate: 01 Jan 1970
+:icons:
+:icontype: svg
+:copyright: Bdale Garbee 2021
+:doctype: book
+:numbered:
+:stylesheet: am.css
+:linkcss:
+:toc:
+:motortest: 1
+:application: Motor Testing
+:pdf-stylesdir: .
+:pdf-style: altusmetrum
+:pdf-fontsdir: fonts
+
+	include::header.adoc[]
+
+	include::motortest-intro.adoc[]
+
+	include::motortest-configuration.adoc[]
+
+	include::motortest-installation.adoc[]
+
+	include::motortest-operation.adoc[]
+

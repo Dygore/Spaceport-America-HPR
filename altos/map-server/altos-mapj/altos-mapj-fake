@@ -1,0 +1,6 @@
+#!/bin/sh
+# map-N43.799102,W120.586281-hybrid-20.jpg
+export QUERY_STRING="lat=43.799102&lon=-120.586281&zoom=20"
+export REMOTE_ADDR="127.0.0.1"
+./altos-mapj-test
+

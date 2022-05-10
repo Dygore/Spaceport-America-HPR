@@ -1,0 +1,12 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+include $(TOPDIR)/lpc/Makefile-lpc.defs
+
+LDFLAGS=-nostartfiles $(CFLAGS) -L$(TOPDIR)/lpc -Taltos.ld -n
+
+ao_serial_lpc.h: $(TOPDIR)/lpc/baud_rate ao_pins.h
+	nickle $(TOPDIR)/lpc/baud_rate `awk '/AO_LPC_CLKOUT/{print $$3}' ao_pins.h` > $@
+
+ao_serial_lpc.o: ao_serial_lpc.h

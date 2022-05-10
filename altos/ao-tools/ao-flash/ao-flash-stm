@@ -1,0 +1,16 @@
+#!/bin/sh
+case "$#" in
+0)
+	echo "usage: $0 <filename> ..."
+	exit 1
+	;;
+esac
+cmds=/tmp/flash$$
+trap "rm $cmds" 0 1 15
+file="$1"
+echo "program $file reset" > $cmds
+openocd \
+	-f interface/stlink-v2.cfg \
+	-f target/stm32l1.cfg \
+	-f $cmds \
+	-c shutdown

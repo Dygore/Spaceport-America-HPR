@@ -1,0 +1,53 @@
+#!/bin/sh
+
+COMPANY="Altus Metrum, LLC"
+PRODUCT="Altus Metrum"
+
+case "$1" in
+    *altosui*)
+	PRODUCT="AltosUI"
+	;;
+    *telegps*)
+	PRODUCT="TeleGPS"
+	;;
+    *micropeak*)
+	PRODUCT="MicroPeak"
+	;;
+esac
+
+VERSION="$2"
+VERSION_COMMA=`echo "$VERSION" | sed 's/\./,/g'`
+INTERNAL_NAME=`basename $1`
+EXE_NAME="$INTERNAL_NAME".exe
+YEAR=`date +%Y`
+
+cat <<EOF
+101 ICON "$1.ico"
+1 VERSIONINFO
+FILEVERSION $VERSION_COMMA
+PRODUCTVERSION $VERSION_COMMA
+FILEFLAGSMASK 0
+FILEOS 0x40004
+FILETYPE 1
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "Comments", "$COMPANY $PRODUCT"
+   VALUE "CompanyName", "$COMPANY"
+   VALUE "FileDescription", "$PRODUCT"
+   VALUE "FileVersion", "$VERSION"
+   VALUE "InternalName", "$INTERNAL_NAME"
+   VALUE "LegalCopyright", "Copyright $YEAR, $COMPANY"
+   VALUE "OriginalFilename", "$EXE_NAME"
+   VALUE "ProductName", "$PRODUCT"
+   VALUE "ProductVersion", "$VERSION"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x409, 1252
+ }
+}
+EOF

@@ -1,0 +1,13 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+include $(TOPDIR)/stmf0/Makefile-stmf0.defs
+
+LDFLAGS=-nostartfiles $(CFLAGS) -L$(TOPDIR)/stmf0 -Taltos.ld -n
+
+LOADER=flash-loader/$(PROGNAME)-altos-flash-$(VERSION).elf
+MAKEBIN=$(TOPDIR)/../ao-tools/ao-makebin/ao-makebin
+FLASH_ADDR=0x08000000
+
+.DEFAULT_GOAL=all

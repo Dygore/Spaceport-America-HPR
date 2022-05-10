@@ -1,0 +1,13 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+include $(TOPDIR)/Makefile.defs
+
+vpath % $(TOPDIR)/stm32f4:$(AO_VPATH)
+
+CC=$(ARM_CC)
+LIBS=-L$(NEWLIB_NANO)/arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard -lc -lm -lgcc
+
+STM32F4_CFLAGS=-mlittle-endian -mcpu=cortex-m4 -mthumb -mfloat-abi=hard \
+	-I$(TOPDIR)/stm32f4 $(AO_CFLAGS) $(NEWLIB_CFLAGS)

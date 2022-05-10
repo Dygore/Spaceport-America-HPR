@@ -1,0 +1,76 @@
+#!/bin/sh
+
+if [ -x /usr/bin/dfu-util ]; then
+    DFU_UTIL=/usr/bin/dfu-util
+else
+    echo "Can't find dfu-util! Aborting."
+    exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+PRODUCT=TeleGPS
+VERSION=2.0
+REPO=~/altusmetrumllc/Binaries
+
+#BASE=`echo $PRODUCT | tr 'A-Z' 'a-z'`
+#echo $FILE
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2017 by Bdale Garbee.  Released under GPL v3+"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION powered from / attached to USB on this computer"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+#
+# Use released versions of everything
+#
+FLASH_FILE=$REPO/loaders/telegps-v2.0-altos-flash-*.bin
+ALTOS_FILE=$REPO/telegps-v2.0-*.elf
+
+$DFU_UTIL -v -v -R -a 0 -s 0x08000000:leave -D $FLASH_FILE 
+
+sleep 3
+
+$USBLOAD --serial=$SERIAL $ALTOS_FILE || exit 1
+
+sleep 3
+
+dev=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+        echo "$PRODUCT found on $dev"
+        ;;
+*)
+        echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+        exit 1
+        ;;
+esac
+
+SERIAL=$SERIAL ./cal-freq $dev
+
+./test-telegps-v2
+
+exit $?

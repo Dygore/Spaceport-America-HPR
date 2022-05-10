@@ -1,0 +1,319 @@
+#!/usr/bin/nickle -f
+/*
+ * Pressure Sensor Model, version 1.1
+ *
+ * written by Holly Grimes
+ *
+ * Uses the International Standard Atmosphere as described in
+ *   "A Quick Derivation relating altitude to air pressure" (version 1.03)
+ *    from the Portland State Aerospace Society, except that the atmosphere
+ *    is divided into layers with each layer having a different lapse rate.
+ *
+ * Lapse rate data for each layer was obtained from Wikipedia on Sept. 1, 2007
+ *    at site <http://en.wikipedia.org/wiki/International_Standard_Atmosphere
+ *
+ * Height measurements use the local tangent plane.  The postive z-direction is up.
+ *
+ * All measurements are given in SI units (Kelvin, Pascal, meter, meters/second^2).
+ *   The lapse rate is given in Kelvin/meter, the gas constant for air is given
+ *   in Joules/(kilogram-Kelvin).
+ */
+
+const real GRAVITATIONAL_ACCELERATION = -9.80665;
+const real AIR_GAS_CONSTANT = 287.053;
+const int NUMBER_OF_LAYERS = 7;
+const real MAXIMUM_ALTITUDE = 84852;
+const real MINIMUM_PRESSURE = 0.3734;
+const real LAYER0_BASE_TEMPERATURE = 288.15;
+const real LAYER0_BASE_PRESSURE = 101325;
+
+/* lapse rate and base altitude for each layer in the atmosphere */
+const real[NUMBER_OF_LAYERS] lapse_rate = {
+	-0.0065, 0.0, 0.001, 0.0028, 0.0, -0.0028, -0.002,
+};
+const int[NUMBER_OF_LAYERS] base_altitude = {
+	0, 11000, 20000, 32000, 47000, 51000, 71000,
+};
+
+
+/* outputs atmospheric pressure associated with the given altitude. altitudes
+   are measured with respect to the mean sea level */
+real altitude_to_pressure(real altitude) {
+
+   real base_temperature = LAYER0_BASE_TEMPERATURE;
+   real base_pressure = LAYER0_BASE_PRESSURE;
+
+   real pressure;
+   real base; /* base for function to determine pressure */
+   real exponent; /* exponent for function to determine pressure */
+   int layer_number; /* identifies layer in the atmosphere */
+   int delta_z; /* difference between two altitudes */
+
+   if (altitude > MAXIMUM_ALTITUDE) /* FIX ME: use sensor data to improve model */
+      return 0;
+
+   /* calculate the base temperature and pressure for the atmospheric layer
+      associated with the inputted altitude */
+   for(layer_number = 0; layer_number < NUMBER_OF_LAYERS - 2 && altitude > base_altitude[layer_number + 1]; layer_number++) {
+      delta_z = base_altitude[layer_number + 1] - base_altitude[layer_number];
+      if (lapse_rate[layer_number] == 0.0) {
+         exponent = GRAVITATIONAL_ACCELERATION * delta_z
+              / AIR_GAS_CONSTANT / base_temperature;
+         base_pressure *= exp(exponent);
+      }
+      else {
+         base = (lapse_rate[layer_number] * delta_z / base_temperature) + 1.0;
+         exponent = GRAVITATIONAL_ACCELERATION /
+              (AIR_GAS_CONSTANT * lapse_rate[layer_number]);
+         base_pressure *= pow(base, exponent);
+      }
+      base_temperature += delta_z * lapse_rate[layer_number];
+   }
+
+   /* calculate the pressure at the inputted altitude */
+   delta_z = altitude - base_altitude[layer_number];
+   if (lapse_rate[layer_number] == 0.0) {
+      exponent = GRAVITATIONAL_ACCELERATION * delta_z
+           / AIR_GAS_CONSTANT / base_temperature;
+      pressure = base_pressure * exp(exponent);
+   }
+   else {
+      base = (lapse_rate[layer_number] * delta_z / base_temperature) + 1.0;
+      exponent = GRAVITATIONAL_ACCELERATION /
+           (AIR_GAS_CONSTANT * lapse_rate[layer_number]);
+      pressure = base_pressure * pow(base, exponent);
+   }
+
+   return pressure;
+}
+
+
+/* outputs the altitude associated with the given pressure. the altitude
+   returned is measured with respect to the mean sea level */
+real pressure_to_altitude(real pressure) {
+
+   real next_base_temperature = LAYER0_BASE_TEMPERATURE;
+   real next_base_pressure = LAYER0_BASE_PRESSURE;
+
+   real altitude;
+   real base_pressure;
+   real base_temperature;
+   real base; /* base for function to determine base pressure of next layer */
+   real exponent; /* exponent for function to determine base pressure
+                             of next layer */
+   real coefficient;
+   int layer_number; /* identifies layer in the atmosphere */
+   int delta_z; /* difference between two altitudes */
+
+   if (pressure < 0)  /* illegal pressure */
+      return -1;
+   if (pressure < MINIMUM_PRESSURE) /* FIX ME: use sensor data to improve model */
+      return MAXIMUM_ALTITUDE;
+
+   /* calculate the base temperature and pressure for the atmospheric layer
+      associated with the inputted pressure. */
+   layer_number = -1;
+   while (layer_number < NUMBER_OF_LAYERS - 2) {
+      layer_number++;
+      base_pressure = next_base_pressure;
+      base_temperature = next_base_temperature;
+      delta_z = base_altitude[layer_number + 1] - base_altitude[layer_number];
+      if (lapse_rate[layer_number] == 0.0) {
+         exponent = GRAVITATIONAL_ACCELERATION * delta_z
+              / AIR_GAS_CONSTANT / base_temperature;
+         next_base_pressure *= exp(exponent);
+      }
+      else {
+         base = (lapse_rate[layer_number] * delta_z / base_temperature) + 1.0;
+         exponent = GRAVITATIONAL_ACCELERATION /
+              (AIR_GAS_CONSTANT * lapse_rate[layer_number]);
+         next_base_pressure *= pow(base, exponent);
+      }
+      next_base_temperature += delta_z * lapse_rate[layer_number];
+      if (pressure >= next_base_pressure)
+	      break;
+   }
+
+   /* calculate the altitude associated with the inputted pressure */
+   if (lapse_rate[layer_number] == 0.0) {
+      coefficient = (AIR_GAS_CONSTANT / GRAVITATIONAL_ACCELERATION)
+                                                    * base_temperature;
+      altitude = base_altitude[layer_number]
+                    + coefficient * log(pressure / base_pressure);
+   }
+   else {
+      base = pressure / base_pressure;
+      exponent = AIR_GAS_CONSTANT * lapse_rate[layer_number]
+                                       / GRAVITATIONAL_ACCELERATION;
+      coefficient = base_temperature / lapse_rate[layer_number];
+      altitude = base_altitude[layer_number]
+                      + coefficient * (pow(base, exponent) - 1);
+   }
+   return altitude;
+}
+
+/*
+ * Values for our MS5607
+ *
+ * From the data sheet:
+ *
+ * Pressure range: 10-1200 mbar (1000 - 120000 Pa)
+ *
+ * Pressure data is reported in units of Pa
+ */
+
+typedef struct {
+	real m, b;
+} line_t;
+
+/*
+ * Linear least-squares fit values in the specified array
+ */
+line_t best_fit(real[] values, int first, int last) {
+       real sum_x = 0, sum_x2 = 0, sum_y = 0, sum_xy = 0;
+       int n = last - first + 1;
+       real m, b;
+
+       for (int i = first; i <= last; i++) {
+	       sum_x += i;
+	       sum_x2 += i**2;
+	       sum_y += values[i];
+	       sum_xy += values[i] * i;
+       }
+       m = (n*sum_xy - sum_y*sum_x) / (n*sum_x2 - sum_x**2);
+       b = sum_y/n - m*(sum_x/n);
+       return (line_t) { m = m, b = b };
+}
+
+void print_table (int pa_sample_shift, int pa_part_shift)
+{
+	real	min_Pa = 0;
+	real	max_Pa = 120000;
+
+	int pa_part_mask = (1 << pa_part_shift) - 1;
+
+	int num_part = ceil(max_Pa / (2 ** (pa_part_shift + pa_sample_shift)));
+
+	int num_samples = num_part << pa_part_shift;
+
+	real sample_to_Pa(int sample) = sample << pa_sample_shift;
+
+	real sample_to_altitude(int sample) = pressure_to_altitude(sample_to_Pa(sample));
+
+	int part_to_sample(int part) = part << pa_part_shift;
+
+	int sample_to_part(int sample) = sample >> pa_part_shift;
+
+	bool is_part(int sample) = (sample & pa_part_mask) == 0;
+
+	real[num_samples] alt = { [n] = sample_to_altitude(n) };
+
+	int seg_len = 1 << pa_part_shift;
+
+	line_t [num_part] fit = {
+		[n] = best_fit(alt, n * seg_len, n * seg_len + seg_len - 1)
+	};
+
+	real[num_samples/seg_len + 1]	alt_part;
+	real[dim(alt_part)]		alt_error = {0...};
+
+	alt_part[0] = fit[0].b;
+	alt_part[dim(fit)] = fit[dim(fit)-1].m * dim(fit) * seg_len + fit[dim(fit)-1].b;
+
+	for (int i = 0; i < dim(fit) - 1; i++) {
+		real	here, there;
+		here = fit[i].m * (i+1) * seg_len + fit[i].b;
+		there = fit[i+1].m * (i+1) * seg_len + fit[i+1].b;
+#		printf ("at %d mis-fit %8.2f\n", i, there - here);
+		alt_part[i+1] = (here + there) / 2;
+	}
+
+	real round(real x) = floor(x + 0.5);
+
+	real sample_to_fit_altitude(int sample) {
+		int	sub = sample // seg_len;
+			int	off = sample % seg_len;
+		line_t	l = fit[sub];
+		real r_v;
+		real i_v;
+
+		r_v = sample * l.m + l.b;
+		i_v = (round(alt_part[sub]*10) * (seg_len - off) + round(alt_part[sub+1]*10) * off) / seg_len;
+		return i_v/10;
+	}
+
+	real max_error = 0;
+	int max_error_sample = 0;
+	real total_error = 0;
+
+	for (int sample = 0; sample < num_samples; sample++) {
+		real	Pa = sample_to_Pa(sample);
+		real	meters = alt[sample];
+
+		real	meters_approx = sample_to_fit_altitude(sample);
+		real	error = abs(meters - meters_approx);
+
+		int	part = sample_to_part(sample);
+
+		if (error > alt_error[part])
+			alt_error[part] = error;
+
+		total_error += error;
+		if (error > max_error) {
+			max_error = error;
+			max_error_sample = sample;
+		}
+		if (false) {
+			printf ("	%8.1f %8.2f %8.2f %8.2f %s\n",
+				Pa,
+				meters,
+				meters_approx,
+				meters - meters_approx,
+				is_part(sample) ? "*" : "");
+		}
+	}
+
+	printf ("/*max error %f at %7.3f kPa. Average error %f*/\n",
+		max_error, sample_to_Pa(max_error_sample) / 1000, total_error / num_samples);
+
+	printf ("#define NALT %d\n", dim(alt_part));
+	printf ("#define ALT_SHIFT %d\n", pa_part_shift + pa_sample_shift);
+	printf ("#ifndef AO_ALT_VALUE\n#define AO_ALT_VALUE(x) (alt_t) (x)\n#endif\n");
+
+	for (int part = 0; part < dim(alt_part); part++) {
+		real kPa = sample_to_Pa(part_to_sample(part)) / 1000;
+		printf ("AO_ALT_VALUE(%10.1f), /* %6.2f kPa error %6.2fm */\n",
+			round (alt_part[part]*10) / 10, kPa,
+			alt_error[part]);
+	}
+}
+
+autoload ParseArgs;
+
+void main()
+{
+	/* Target is an array of < 1000 entries */
+	int pa_sample_shift = 2;
+	int pa_part_shift = 6;
+
+	ParseArgs::argdesc argd = {
+		.args = {
+			{ .var = { .arg_int = &pa_sample_shift },
+			  .abbr = 's',
+			  .name = "sample",
+			  .expr_name = "sample_shift",
+			  .desc = "sample shift value" },
+			{ .var = { .arg_int = &pa_part_shift },
+			  .abbr = 'p',
+			  .name = "part",
+			  .expr_name = "part_shift",
+			  .desc = "part shift value" },
+		}
+	};
+
+	ParseArgs::parseargs(&argd, &argv);
+
+	print_table(pa_sample_shift, pa_part_shift);
+}
+
+main();

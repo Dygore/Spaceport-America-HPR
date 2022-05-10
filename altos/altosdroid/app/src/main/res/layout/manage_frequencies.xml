@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+ Copyright © 2016 Keith Packard <keithp@keithp.com>
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/set_layout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	>
+      <EditText
+	  android:id="@+id/set_frequency"
+	  android:layout_width="wrap_content"
+	  android:layout_height="fill_parent"
+	  android:padding="10dp"
+	  android:layout_weight="1"
+	  android:hint="@string/frequency"
+	  android:inputType="number|numberDecimal"/>
+      />
+      <TextView
+	  android:id="@+id/mhz"
+	  android:layout_width="wrap_content"
+	  android:layout_height="fill_parent"
+	  android:padding="10dp"
+	  android:layout_weight="0"
+	  android:text="@string/mhz"
+	  />
+      <EditText
+	  android:id="@+id/set_description"
+	  android:layout_width="wrap_content"
+	  android:layout_height="fill_parent"  
+	  android:padding="10dp"
+	  android:layout_weight="2"
+	  android:hint="@string/description"
+	  />
+    </LinearLayout>
+    <LinearLayout
+	android:orientation="horizontal"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	>
+      <Button android:id="@+id/set"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/set"
+	      android:layout_weight="1"
+	      />
+      
+      <Button android:id="@+id/remove"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/remove"
+	      android:layout_weight="1"
+	      />
+      
+      <Button android:id="@+id/done"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/done"
+	      android:layout_weight="1"
+	      />
+    </LinearLayout>
+
+    <ListView android:id="@+id/frequencies"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+	android:fadeScrollbars="false"
+	android:scrollbars="vertical"
+	android:choiceMode="singleChoice"
+	/>
+
+    
+</LinearLayout>

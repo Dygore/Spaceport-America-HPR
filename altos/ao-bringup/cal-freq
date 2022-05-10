@@ -1,0 +1,25 @@
+#!/bin/sh
+
+case $# in
+1)
+	dev="$1"
+	;;
+*)
+	echo "Usage: $0 <device>"
+	exit 1;
+	;;
+esac
+
+../ao-tools/ao-cal-freq/ao-cal-freq --tty=$dev
+case $? in
+    0)
+	calline=`./get-radio-cal $dev`
+	CAL_VALUE=`echo $calline | awk '{print $2}'`
+	CURRENT_FREQ=`echo $calline | awk '{print $4}'`
+	echo $SERIAL","$CAL_VALUE >> cal_values
+	exit 0
+	;;
+    *)
+	exit 1
+	;;
+esac

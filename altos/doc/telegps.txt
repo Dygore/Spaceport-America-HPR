@@ -1,0 +1,38 @@
+= TeleGPS Owner's Manual
+Keith Packard <keithp@keithp.com>; Bdale Garbee <bdale@gag.com>
+:title-logo-image: image:../themes/background.png[]
+:revnumber: v{version}
+:revdate: 01 Jan 1970
+:copyright: Bdale Garbee and Keith Packard 2021
+:stylesheet: am.css
+:linkcss:
+:toc:
+:doctype: book
+:numbered:
+:telegps: 1
+:radio: 1
+:gps: 1
+:application: TeleGPS
+:pdf-stylesdir: .
+:pdf-style: altusmetrum
+:pdf-fontsdir: fonts
+
+	include::header.adoc[]
+
+	include::telegps-dedication.adoc[]
+
+	include::telegps-quick-start.adoc[]
+
+	include::telegps-using.adoc[]
+
+	include::telegps-application.adoc[]
+
+	include::telegps-system-operation.adoc[]
+
+	include::handling.adoc[]
+
+	include::telegps-specs.adoc[]
+
+	include::telegps-updating-firmware.adoc[]
+
+	include::telegps-release-notes.adoc[]

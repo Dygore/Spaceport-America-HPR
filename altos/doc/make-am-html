@@ -1,0 +1,30 @@
+#!/bin/sh
+cat << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content=
+"text/html; charset=utf-8" />
+<title>Altus Metrum Documentation</title>
+<link rel="stylesheet" type="text/css" href="am.css" />
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1" />
+</head>
+<body>
+<h1>Altus Metrum Documentation</h1>
+EOF
+
+for i in "$@"; do
+	echo '<p>'
+	grep '<title>' $i | head -1 | sed -e 's/.*<title>//' -e 's;</title>.*;;'
+	pdf=`basename "$i" .html`.pdf
+	echo '<a href="'$i'">html</a>'
+	echo '<a href="'$pdf'">pdf</a>'
+	echo '</p>'
+done
+
+cat << 'EOF'
+</body>
+</html>
+EOF

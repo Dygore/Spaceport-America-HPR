@@ -1,0 +1,17 @@
+Creating documentation for a new release of AltOS
+
+* Write release notes in release-notes-${version}.inc.
+
+* Make sure that doc/altusmetrum.txt has the right copyright year
+
+* Make sure doc/altusmetrum-theme.yml has the right copyright year
+
+* Add references to that as appropriate from each of the documents:
+
+	release-notes.inc
+	easymini-release-notes.inc
+	telegps-release-notes.inc
+
+* Add release-notes-${version}.inc to Makefile.am and git
+
+* Make sure new hardware specs are documented in specs.inc

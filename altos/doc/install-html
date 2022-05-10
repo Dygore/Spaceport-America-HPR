@@ -1,0 +1,32 @@
+#!/bin/sh
+destination=
+state=arg
+for file in "$@"; do
+    case $state in
+	arg)
+	    case $file in
+		-d)
+		    state=destination
+		    ;;
+		*)
+		    base=`basename $file`
+		    case "$destination" in
+			"")
+			    echo "Need -d destination option before files" 1>&2
+			    exit 1
+			    ;;
+			*)
+			    sed \
+				-e 's/<[?]xml [^>]*>//' \
+				-e 's/<!DOCTYPE [^>]*>//' "$file" > "$destination/$base"
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    ;;
+	destination)
+	    destination=$file
+	    state=arg
+	    ;;
+    esac
+done

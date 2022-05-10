@@ -1,0 +1,122 @@
+#!/usr/bin/nickle
+
+autoimport ParseArgs;
+
+file  out = stdout;
+
+void
+write_ucs2(string a, string description)
+{
+	int len = String::length(a);
+
+	File::fprintf(out, "/* %s */\n", description);
+	File::fprintf(out, "#define AO_%s_LEN 0x%02x\n", description, len * 2 + 2);
+	File::fprintf(out, "#define AO_%s_STRING \"%s\"\n", description, a);
+	File::fprintf(out, "#define AO_%s_UCS2", description);
+	for (int i = 0; i < len; i++) {
+		int	c = a[i];
+		if (i > 0)
+			File::fprintf(out, ",");
+		if (0x20 <= c && c < 128)
+			File::fprintf(out, " '%c', 0", c);
+		else
+			File::fprintf(out, " LE_WORD(0x%04x),", c);
+	}
+	File::fprintf(out, "\n\n");
+}
+
+void
+write_string(string a, string description)
+{
+	File::fprintf(out, "/* %s */\n", description);
+	File::fprintf(out, "#define AO_%s_STRING \"%s\"\n", description, a);
+}
+
+void
+write_int(int a, string description)
+{
+	File::fprintf(out, "/* %s */\n", description);
+	File::fprintf(out, "#define AO_%s_NUMBER %d\n\n", description, a);
+}
+
+void
+write_hex(int a, string description)
+{
+	File::fprintf(out, "/* %s */\n", description);
+	File::fprintf(out, "#define AO_%s_NUMBER 0x%04x\n\n", description, a);
+}
+
+string manufacturer = "altusmetrum.org";
+string product = "TeleMetrum";
+string version = "0.0";
+string output = "";
+int serial = 1;
+int user_argind = 0;
+int id_vendor = 0xfffe;
+int id_product = 0x000a;
+
+argdesc argd = {
+	.args = {
+		{
+			.var = { .arg_string = &manufacturer },
+			.abbr = 'm',
+			.name = "manufacturer",
+			.expr_name = "manf",
+			.desc = "Manufacturer name." },
+		{
+			.var = { .arg_string = &product },
+			.abbr = 'p',
+			.name = "product",
+			.expr_name = "prod",
+			.desc = "Product name." },
+		{
+			.var = { .arg_int = &id_vendor },
+			.abbr = 'V',
+			.name = "id_vendor",
+			.expr_name = "id_v",
+			.desc = "Vendor ID." },
+		{
+			.var = { .arg_int = &id_product },
+			.abbr = 'i',
+			.name = "id_product",
+			.expr_name = "id_p",
+			.desc = "Product ID." },
+		{
+			.var = { .arg_int = &serial },
+			.abbr = 's',
+			.name = "serial",
+			.expr_name = "number",
+			.desc = "Serial number." },
+		{
+			.var = { .arg_string = &version },
+			.abbr = 'v',
+			.name = "version",
+			.expr_name = "string",
+			.desc = "Program version." },
+		{
+			.var = { .arg_string = &output },
+			.abbr = 'o',
+			.name = "output",
+			.expr_name = "out",
+			.desc = "Output file." },
+	},
+	.prog_name = "usb descriptors",
+};
+
+void
+main()
+{
+	string[dim(argv)-1] nargv = {[n] = argv[n+1]};
+	parseargs(&argd, &nargv);
+	if (output != "")
+		out = File::open(output, "w");
+	write_ucs2(manufacturer, "iManufacturer");
+	write_ucs2(product, "iProduct");
+	write_ucs2(sprintf("%06d", serial), "iSerial");
+	write_int(serial, "iSerial");
+	write_hex(id_product, "idProduct");
+	write_hex(id_vendor, "idVendor");
+	write_string(version, "iVersion");
+}
+
+main();

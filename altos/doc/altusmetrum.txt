@@ -1,0 +1,75 @@
+= The Altus Metrum System: An Owner's Manual for Altus Metrum Rocketry Electronics
+Keith Packard <keithp@keithp.com>; Bdale Garbee <bdale@gag.com>; Bob Finch; Anthony Towns
+:title-logo-image: image:../themes/background.png[]
+:revnumber: v{version}
+:revdate: 1 Jan 1970
+:icons:
+:icontype: svg
+:copyright: Bdale Garbee and Keith Packard 2021
+:doctype: book
+:numbered:
+:stylesheet: am.css
+:linkcss:
+:toc:
+:altusmetrum: 1
+:radio: 1
+:gps: 1
+:telemetrum: 1
+:telemini: 1
+:easymini: 1
+:telemega: 1
+:easymega: 1
+:telegps: 1
+:easytimer: 1
+:easymotor: 1
+:application: AltosUI
+:pdf-stylesdir: .
+:pdf-style: altusmetrum
+:pdf-fontsdir: fonts
+
+	include::header.adoc[]
+
+	include::dedication.adoc[]
+
+	include::intro.adoc[]
+
+	include::getting-started.adoc[]
+
+	include::usage.adoc[]
+
+	include::telemetrum.adoc[]
+
+	include::telemini.adoc[]
+
+	include::easymini-device.adoc[]
+
+	include::telemega.adoc[]
+
+	include::easymega.adoc[]
+
+	include::easytimer.adoc[]
+
+	include::installation.adoc[]
+
+	include::using-am-products.adoc[]
+
+	include::altosui.adoc[]
+
+	include::altosdroid.adoc[]
+
+	include::system-operation.adoc[]
+
+	include::pyro-examples.adoc[]
+
+	include::handling.adoc[]
+
+	include::updating-firmware.adoc[]
+
+	include::frequency-cal.adoc[]
+
+	include::flight-data-recording.adoc[]
+
+	include::specs.adoc[]
+
+	include::release-notes.adoc[]
+

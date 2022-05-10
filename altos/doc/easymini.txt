@@ -1,0 +1,47 @@
+= EasyMini Owner's Manual
+Keith Packard <keithp@keithp.com>; Bdale Garbee <bdale@gag.com>
+:title-logo-image: image:../themes/background.png[]
+:revnumber: v{version}
+:revdate: 01 Jan 1970
+:copyright: Bdale Garbee and Keith Packard 2021
+:doctype: book
+:numbered:
+:toc:
+:stylesheet: am.css
+:linkcss:
+:altusmetrum: 1
+:easymini: 1
+:application: AltosUI
+:pdf-stylesdir: .
+:pdf-style: altusmetrum
+:pdf-fontsdir: fonts
+
+	include::header.adoc[]
+
+	include::dedication.adoc[]
+
+	include::intro.adoc[]
+
+	include::getting-started.adoc[]
+
+	include::usage.adoc[]
+
+	include::easymini-device.adoc[]
+
+	include::installation.adoc[]
+
+	include::using-am-products.adoc[]
+
+	include::altosui.adoc[]
+
+	include::system-operation.adoc[]
+
+	include::handling.adoc[]
+
+	include::updating-firmware.adoc[]
+
+	include::flight-data-recording.adoc[]
+
+	include::specs.adoc[]
+
+	include::easymini-release-notes.adoc[]

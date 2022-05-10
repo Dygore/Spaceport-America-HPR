@@ -1,0 +1,113 @@
+#!/usr/bin/nickle
+
+real
+pll_out(real clock_in, int mul, int div)
+{
+	return clock_in * mul / div;
+}
+
+real
+pll_in(real pll_out, int mul, int div)
+{
+	return pll_out * div / mul;
+}
+
+real
+fcco_out(real clock_in, int mul, int div)
+{
+	real	out = pll_out(clock_in, mul, div);
+	return out * div;
+}
+
+bool
+valid_clock_in(real clock_in)
+{
+	return 10 <= clock_in && clock_in < 25;
+}
+
+bool
+valid_fcco(real clock_in, int mul, int div)
+{
+	real fcco = fcco_out (clock_in, mul, div);
+	return 156 <= fcco && fcco <= 320;
+}
+
+void
+all_clocks(real clock_in) {
+	for (int mul = 1; mul <= 32; mul++) {
+		for (int div = 2; div <= 16; div *= 2) {
+			if (!valid_fcco(clock_in, mul, div))
+				printf ("clock_in %f mul  %d div %d invalid fcco %f\n",
+					clock_in, mul, div, fcco_out(clock_in, mul, div));
+			else
+				printf ("clock_in %f mul %d div %d pll_out %f\n",
+					clock_in, mul, div, pll_out(clock_in, mul, div));
+		}
+	}
+}
+
+typedef struct {
+	real	clock_in;
+	int	mul;
+	int	div;
+	real	pll_out;
+} clock;
+
+clock[]
+all_ins(real pll_out)
+{
+	clock[...] clocks = {};
+	for (int mul = 1; mul <= 32; mul++) {
+		for (int div = 2; div <= 16; div *= 2) {
+			real clock_in = pll_in(pll_out, mul, div);
+			if (valid_clock_in(clock_in) && valid_fcco(clock_in, mul, div)) {
+				clocks[dim(clocks)] = (clock) {
+					.clock_in = clock_in,
+					.mul = mul,
+					.div = div,
+					.pll_out = pll_out
+				};
+			}
+		}
+	}
+	return clocks;
+}
+
+#all_clocks(12.0);
+
+autoload Sort;
+
+void
+dump_clocks(clock[] clocks)
+{
+	printf ("Clocks for %f\n", clocks[0].pll_out);
+	Sort::qsort(&clocks, bool func(clock a, clock b) { return a.clock_in > b.clock_in; });
+	for (int i = 0; i < dim (clocks); i++) {
+		printf("\tclock_in %f mul %d div %d\n",
+		       clocks[i].clock_in,
+		       clocks[i].mul,
+		       clocks[i].div);
+	}
+}
+
+void
+find_clocks() {
+	clock[] c40 = all_ins(40.0);
+	clock[] c48 = all_ins(48.0);
+
+	dump_clocks(c40);
+	dump_clocks(c48);
+	for (int i40 = 0; i40 < dim(c40); i40++) {
+		for (int i48 = 0; i48 < dim(c48); i48++) {
+			if (c40[i40].clock_in == c48[i48].clock_in)
+				printf ("clock_in %f mul_40 %d div_40 %d mul_48 %d div_48 %d\n",
+					c40[i40].clock_in,
+					c40[i40].mul,
+					c40[i40].div,
+					c48[i48].mul,
+					c48[i48].div);
+		}
+	}
+}
+
+find_clocks();

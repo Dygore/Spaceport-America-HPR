@@ -1,0 +1,11 @@
+:notitle:
+:doctype: article
+
+== EasyMega Outline and Hole Pattern
+	This image, when printed, provides a precise template for the
+	mounting holes in EasyMega. EasyMega has overall dimensions of
+	1.250 x 2.250 inches, and the mounting holes are 0.125 inches from
+	each board edge.  That means the mounting holes are in a rectangle
+	measuring 1.000 x 2.00 inches, sized for use with 4-40 or M3 screws.
+
+	image::easymega.svg[align="center"]

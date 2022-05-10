@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 Richard Hughes <richard@hughsie.com> -->
+<component type="firmware">
+  <id>org.altusmetrum.ChaosKey.firmware</id>
+  <name>ChaosKey</name>
+  <summary>Firmware for the Altus Metrum ChaosKey</summary>
+  <description>
+    <p>
+      Updating the firmware on your ChaosKey device improves performance and adds
+      new features.
+    </p>
+  </description>
+  <provides>
+    <!-- USB\VID_1D50&PID_60C6 -->
+    <firmware type="flashed">b62500d7-c981-595b-a798-eb6cf4d4942b</firmware>
+  </provides>
+  <url type="homepage">https://chaoskey.org/</url>
+  <metadata_license>CC-BY-4.0</metadata_license>
+  <project_license>GPL-2.0</project_license>
+  <developer_name>AltusMetrum</developer_name>
+  <releases>
+    <release urgency="medium" version="@VERSION@" date="@RELEASE_DATE@">
+      <checksum filename="chaoskey-v1.0-@VERSION@.ihx" target="content"/>
+      <description>
+        <p>
+          FIXME before release.
+        </p>
+      </description>
+    </release>
+    <release urgency="medium" version="1.6.7" date="2017-01-01">
+      <checksum filename="chaoskey-v1.0-1.6.7.ihx" target="content"/>
+      <description>
+        <p>
+          Change the ADC clock speed to eliminate sampling problems which
+          cleans up the chaoskey raw data.
+        </p>
+      </description>
+    </release>
+  </releases>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://chaoskey.org/chaoskey-connector.svg</image>
+      <caption>Remove the plastic cover, then connect pins 1 and 5 whilst inserting into a USB socket.</caption>
+    </screenshot>
+  </screenshots>
+</component>

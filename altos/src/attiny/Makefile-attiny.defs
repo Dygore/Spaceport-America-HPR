@@ -1,0 +1,13 @@
+include $(TOPDIR)/avr/Makefile-avr.defs
+
+vpath % $(TOPDIR)/attiny:$(AO_VPATH)
+
+MCU=attiny85
+DUDECPUTYPE=t85
+#PROGRAMMER=stk500v2 -P usb
+PROGRAMMER=avrisp2
+LOADSLOW=-i 32 -B 32
+LOADARG=-p $(DUDECPUTYPE) -c $(PROGRAMMER) -e -U flash:w:
+
+ATTINY_CFLAGS = -mmcu=$(MCU) -mcall-prologues -DATTINY \
+	-I$(TOPDIR)/attiny $(AO_CFLAGS)

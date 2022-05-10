@@ -1,0 +1,81 @@
+#!/bin/sh
+
+if [ -x /usr/bin/ao-flash-stm ]; then
+	FLASH_STM=/usr/bin/ao-flash-stm
+else
+	echo "Can't find ao-flash-stm!  Aborting."
+	exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+VERSION=2.0
+REPO=~/altusmetrumllc/Binaries
+PRODUCT=TeleMega
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2014 by Bdale Garbee.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION powered from USB"
+echo "\t\twith ST-Link-V2 cabled to debug header"
+echo "\t\twith coax from UHF to frequency counter"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+echo $FLASH_STM
+
+$FLASH_STM $REPO/loaders/telemega-v$VERSION*.elf 
+
+sleep 5
+
+$USBLOAD --serial=$SERIAL --force $REPO/telemega-v$VERSION*.elf || exit 1
+
+sleep 5
+
+dev=`ao-list | awk '/TeleMega-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "TeleMega found on $dev"
+	;;
+*)
+	echo 'No TeleMega-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+
+SERIAL=$SERIAL ./cal-freq $dev
+
+failed=1
+while [ $failed = 1 ]; do
+    ../ao-tools/ao-cal-accel/ao-cal-accel $dev
+    failed=$?
+done
+
+echo 'E 1' > $dev
+
+./test-telemega-v2.0
+
+exit $?

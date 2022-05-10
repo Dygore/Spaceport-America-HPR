@@ -1,0 +1,189 @@
+/*
+ * Copyright © 2018 Keith Packard <keithp@keithp.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ */
+
+/*
+ * Generate LED images for rocketview and launchcontrol
+ */
+
+autoimport Cairo;
+
+void led (cairo_t cr, real red, real green, real blue, bool on)
+{
+    translate (cr, .5, .5);
+
+    /* basic unilluminated LED */
+
+    if (true)
+    {
+	set_source_rgb (cr, red *.4, green *.4, blue *.4);
+	move_to (cr, 1, 1/2);
+	arc (cr, .5, .5, .5, 0, pi*2);
+	fill (cr);
+    }
+
+    /* Bright spot of LED illumination */
+    if (on)
+    {
+	pattern_t	led = Pattern::create_radial (1/2, 1/2, 0,
+						      1/2, 1/2, .4);
+	Pattern::add_color_stop_rgba (led, 0, red, green, blue, 1);
+	Pattern::add_color_stop_rgba (led, .5, red, green, blue, .8);
+	Pattern::add_color_stop_rgba (led, 1, red, green, blue, 0);
+	set_source (cr, led);
+	move_to (cr, 1, 1/2);
+	arc (cr, .5, .5, .5, 0, pi*2);
+	fill (cr);
+    }
+
+    /* Bezel */
+    if (true)
+    {
+	pattern_t	ring = Pattern::create_radial (.5, .5, .4, .5, .5, .5);
+	Pattern::add_color_stop_rgba (ring, 0, 0, 0, 0, 1);
+	Pattern::add_color_stop_rgba (ring, .5, 0, 0, 0, 1);
+	Pattern::add_color_stop_rgba (ring, 1, .5, .5, .5, 1);
+	set_source (cr, ring);
+	move_to (cr, 1, 1/2);
+	arc (cr, .5, .5, .5, 0, pi*2);
+	move_to (cr, 1, 1/2);
+	arc_negative (cr, .5, .5, .45, pi*2, 0);
+	fill (cr);
+    }
+
+    /* Specular highlight from room illumination */
+    if (true)
+    {
+	pattern_t	room = Pattern::create_radial (1/3, 1/3, 0, 1/3, 1/3, 1/2);
+	Pattern::add_color_stop_rgba (room, 0, 1, 1, 1, .4);
+	Pattern::add_color_stop_rgba (room, 1, 1, 1, 1, 0);
+	set_source (cr, room);
+	move_to (cr, 1, 1/2);
+	arc (cr, .5, .5, .5, 0, pi*2);
+	fill (cr);
+    }
+
+}
+
+/*
+ * Desired LED image size in pixels
+ */
+int diameter = 12;
+
+void do_one_svg (string name, real red, real green, real blue, bool on)
+{
+    cairo_t cr = new_svg (name, diameter, diameter);
+
+    translate (cr, -width(cr)/2, -height(cr)/2);
+    scale (cr, width(cr), height(cr));
+    led (cr, red, green, blue, on);
+    destroy (cr);
+}
+
+void do_one_png (string name, real red, real green, real blue, bool on)
+{
+    cairo_t cr = new_image (diameter, diameter);
+
+    translate (cr, -width(cr)/2, -height(cr)/2);
+    scale (cr, width(cr), height(cr));
+    led (cr, red, green, blue, on);
+    write_to_png (cr, name);
+    destroy (cr);
+}
+
+void do_one(string name,  real red, real green, real blue, bool on)
+{
+    do_one_png(name + ".png", red, green, blue, on);
+    do_one_svg(name + ".svg", red, green, blue, on);
+}
+
+void doit ()
+{
+    do_one ("redled", 1, 0, 0, true);
+    do_one ("redoff", 1, 0, 0, false);
+    do_one ("greenled", 0, 1, .4824, true);
+    do_one ("greenoff", 0, 1, .4824, false);
+    do_one ("grayled", .9, .9, .9, false);
+    do_one ("grayon", .9, .9, .9, true);
+}
+
+typedef struct {
+    real	red, green, blue;
+    bool	on;
+} stock_t;
+
+stock_t[string] stock_leds = {
+    "redled" => {
+	.red = 1,
+	.green = 0,
+	.blue = 0,
+	.on = true
+    },
+    "redoff" => {
+	.red = 1,
+	.green = 0,
+	.blue = 0,
+	.on = false
+    },
+    "greenled" => {
+	.red = 0,
+	.green = 1,
+	.blue = .4824,
+	.on = true
+    },
+    "greenoff" => {
+	.red = 0,
+	.green = 1,
+	.blue = .4824,
+	.on = false
+    },
+    "grayon" => {
+	.red = .9,
+	.green = .9,
+	.blue = .9,
+	.on = true
+    },
+    "grayled" => {
+	.red = .9,
+	.green = .9,
+	.blue = .9,
+	.on = false
+    },
+};
+
+void main ()
+{
+    for (int i = 1; i < dim(argv); i++) {
+	string 		name = argv[i];
+	string[]	bits = String::split(name, ".");
+
+	if (dim(bits) != 2) {
+	    File::fprintf(stderr, "Filename is weird: \"%s\"\n", argv[i]);
+	    exit (1);
+	}
+
+	stock_t	stock = stock_leds[bits[0]];
+	switch (bits[1]) {
+	case "png":
+	    do_one_png(argv[i], stock.red, stock.green, stock.blue, stock.on);
+	    break;
+	case "svg":
+	    do_one_svg(argv[i], stock.red, stock.green, stock.blue, stock.on);
+	    break;
+	}
+    }
+}
+
+if (dim(argv) > 0) {
+    main();
+}

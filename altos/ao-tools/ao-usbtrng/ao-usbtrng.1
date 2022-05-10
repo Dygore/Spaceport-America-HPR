@@ -1,0 +1,58 @@
+.\"
+.\" Copyright © 2009 Keith Packard <keithp@keithp.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-USBTRNG 1 "ao-usbtrng" ""
+.SH NAME
+ao-usbtrng \- dump random numbers from USBtrng
+.SH SYNOPSIS
+.B "ao-usbtrng" [OPTION...] [KBYTES]
+.SH DESCRIPTION
+.I ao-usbtrng
+dumps random numbers from a USBtrng device. If provided KBYTES specifies the number of 1024 byte blocks to produce on standard output. Without KBYTES
+.I ao-usbtrng
+produces random bytes continuously until killed.
+.SH OPTIONS
+.TP
+\-v, --verbose
+increase verbosity
+.TP
+\-T, -tty=TTYDEVICE
+This selects which tty device the debugger uses to communicate with
+the target device. The special name 'BITBANG' directs ao-dbg to use
+the cp2103 connection, otherwise this should be a usb serial port
+connected to a suitable cc1111 debug node.
+.TP
+\-D, --device=ALTOSDEVICE
+Search for a connected device. This requires an argument of one of the
+following forms:
+.IP
+usbtrng:2
+.br
+usbtrng
+.br
+2
+.IP
+Leaving out the product name will cause the tool to select a suitable
+product, leaving out the serial number will cause the tool to match
+one of the available devices.
+.SH USAGE
+.I ao-usbtrng
+opens the target device and reads the specified number of KBYTES of
+random data.
+.SH AUTHOR
+Keith Packard

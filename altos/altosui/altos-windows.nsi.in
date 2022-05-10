@@ -1,0 +1,262 @@
+!addplugindir Instdrv/NSIS/Plugins
+!addincludedir Instdrv/NSIS/Includes
+!include x64.nsh
+!include java.nsh
+!include refresh-sh.nsh
+
+!define REG_NAME	"Altus Metrum"
+!define PROG_ID_TELEM	"altusmetrum.altosui.telem.1"
+!define PROG_ID_EEPROM	"altusmetrum.altosui.eeprom.1"
+!define FAT_NAME	"altosui-fat.jar"
+!define WIN_APP_ICON	"altusmetrum-altosui.ico"
+!define WIN_APP_EXE	"altusmetrum-altosui.exe"
+!define WIN_TELEM_EXE	"application-vnd.altusmetrum.telemetry.exe"
+!define WIN_EEPROM_EXE	"application-vnd.altusmetrum.eeprom.exe"
+
+Name "${REG_NAME} Installer"
+
+; Default install directory
+InstallDir "$PROGRAMFILES\AltusMetrum"
+
+; Tell the installer where to re-install a new version
+InstallDirRegKey HKLM "Software\${REG_NAME}" "Install_Dir"
+
+LicenseText "GNU General Public License Version 2"
+LicenseData "../COPYING"
+
+; Need admin privs for Vista or Win7
+RequestExecutionLevel admin
+
+ShowInstDetails Show
+
+ComponentText "${REG_NAME} Software and Driver Installer"
+
+Function .onInit
+	DetailPrint "Checking host operating system"
+	${If} ${RunningX64}
+		DetailPrint "Installer running on 64-bit host"
+		SetRegView 64
+		StrCpy $INSTDIR "$PROGRAMFILES64\AltusMetrum"
+		${DisableX64FSRedirection}
+	${EndIf}
+FunctionEnd
+
+Function un.onInit
+	DetailPrint "Checking host operating system"
+	${If} ${RunningX64}
+		DetailPrint "Installer running on 64-bit host"
+		SetRegView 64
+		StrCpy $INSTDIR "$PROGRAMFILES64\AltusMetrum"
+		${DisableX64FSRedirection}
+	${EndIf}
+FunctionEnd
+
+; Pages to present
+
+Page license
+Page components
+Page directory
+Page instfiles
+
+UninstPage uninstConfirm
+UninstPage instfiles
+
+; And the stuff to install
+
+Section "Install Driver" InstDriver
+
+	InstDrv::InitDriverSetup /NOUNLOAD {4D36E96D-E325-11CE-BFC1-08002BE10318} AltusMetrumSerial
+	Pop $0
+	DetailPrint "InitDriverSetup: $0"
+	InstDrv::DeleteOemInfFiles /NOUNLOAD
+	InstDrv::CreateDevice /NOUNLOAD
+
+	SetOutPath $INSTDIR
+	File "../altusmetrum.inf"
+	File "../altusmetrum.cat"
+
+	${DisableX64FSRedirection}
+	IfFileExists $WINDIR\System32\PnPutil.exe 0 nopnp
+		${DisableX64FSRedirection}
+		nsExec::ExecToLog '"$WINDIR\System32\PnPutil.exe" -i -a "$INSTDIR\altusmetrum.inf"'
+		Goto done
+nopnp:
+		InstDrv::InstallDriver /NOUNLOAD "$INSTDIR\altusmetrum.inf"
+done:
+
+SectionEnd
+
+Section "${REG_NAME} Application"
+	Call DetectJRE
+
+	SetOutPath $INSTDIR
+
+	File "${FAT_NAME}"
+	File "altoslib_@ALTOSLIB_VERSION@.jar"
+	File "altosuilib_@ALTOSUILIB_VERSION@.jar"
+	File "cmudict04.jar"
+	File "cmulex.jar"
+	File "cmu_time_awb.jar"
+	File "cmutimelex.jar"
+	File "cmu_us_kal.jar"
+	File "en_us.jar"
+	File "freetts.jar"
+	File "jfreechart.jar"
+	File "jcommon.jar"
+	File "../icon/${WIN_APP_EXE}"
+
+	File "*.dll"
+
+	File "../icon/${WIN_APP_ICON}"
+
+	CreateShortCut "$SMPROGRAMS\${REG_NAME}.lnk" "$INSTDIR\${WIN_APP_EXE}" "" "$INSTDIR\${WIN_APP_ICON}"
+SectionEnd
+
+Section "${REG_NAME} Desktop Shortcut"
+	CreateShortCut "$DESKTOP\${REG_NAME}.lnk" "$INSTDIR\${WIN_APP_EXE}"  "" "$INSTDIR\${WIN_APP_ICON}"
+SectionEnd
+
+Section "Firmware"
+
+	SetOutPath $INSTDIR
+
+	File "../src/telemetrum-v2.0/telemetrum-v2.0-${VERSION}.ihx"
+	File "../src/telemetrum-v3.0/telemetrum-v3.0-${VERSION}.ihx"
+	File "../src/telemini-v3.0/telemini-v3.0-${VERSION}.ihx"
+	File "../src/telegps-v1.0/telegps-v1.0-${VERSION}.ihx"
+	File "../src/telegps-v2.0/telegps-v2.0-${VERSION}.ihx"
+	File "../src/teledongle-v3.0/teledongle-v3.0-${VERSION}.ihx"
+	File "../src/telebt-v3.0/telebt-v3.0-${VERSION}.ihx"
+	File "../src/telebt-v4.0/telebt-v4.0-${VERSION}.ihx"
+	File "../src/telemega-v1.0/telemega-v1.0-${VERSION}.ihx"
+	File "../src/telemega-v2.0/telemega-v2.0-${VERSION}.ihx"
+	File "../src/telemega-v3.0/telemega-v3.0-${VERSION}.ihx"
+	File "../src/telemega-v4.0/telemega-v4.0-${VERSION}.ihx"
+	File "../src/telemega-v5.0/telemega-v5.0-${VERSION}.ihx"
+	File "../src/easymini-v1.0/easymini-v1.0-${VERSION}.ihx"
+	File "../src/easymini-v2.0/easymini-v2.0-${VERSION}.ihx"
+	File "../src/easymega-v1.0/easymega-v1.0-${VERSION}.ihx"
+	File "../src/easymega-v2.0/easymega-v2.0-${VERSION}.ihx"
+	File "../src/easymotor-v2/easymotor-v2-${VERSION}.ihx"
+	File "../src/easytimer-v1/easytimer-v1-${VERSION}.ihx"
+	File "../src/telelco-v2.0/telelco-v2.0-${VERSION}.ihx"
+	File "../src/telefireeight-v1.0/telefireeight-v1.0-${VERSION}.ihx"
+	File "../src/telefireeight-v2.0/telefireeight-v2.0-${VERSION}.ihx"
+
+SectionEnd
+
+Section "Documentation"
+
+	SetOutPath $INSTDIR
+
+	File "../doc/altusmetrum.pdf"
+	File "../doc/altos.pdf"
+	File "../doc/telemetry.pdf"
+	File "../doc/telemetrum-outline.pdf"
+	File "../doc/telemega-outline.pdf"
+	File "../doc/easymini-outline.pdf"
+	File "../doc/telemini-v1-outline.pdf"
+	File "../doc/telemini-v3-outline.pdf"
+SectionEnd
+
+Section "File Associations"
+
+	${DisableX64FSRedirection}
+
+	SetOutPath $INSTDIR
+
+	File "../icon/${WIN_TELEM_EXE}"
+	File "../icon/${WIN_EEPROM_EXE}"
+
+	DeleteRegKey HKCR "${PROG_ID_TELEM}"
+	DeleteRegKey HKCR "${PROG_ID_EEPROM}"
+
+	DeleteRegKey   HKCR ".eeprom\${PROG_ID_EEPROM}"
+	DeleteRegValue HKCR ".eeprom\OpenWithProgids" "${PROG_ID_EEPROM}"
+	DeleteRegKey   HKCR ".telem\${PROG_ID_EEPROM}"
+	DeleteRegValue HKCR ".telem\OpenWithProgids" "${PROG_ID_EEPROM}"
+
+	; .eeprom elements
+
+	WriteRegStr HKCR "${PROG_ID_EEPROM}"		""				"Altus Metrum Log File"
+	WriteRegStr HKCR "${PROG_ID_EEPROM}"		"FriendlyTypeName"		"Altus Metrum Log File"
+	WriteRegStr HKCR "${PROG_ID_EEPROM}\CurVer"	""				"${PROG_ID_EEPROM}"
+	WriteRegStr HKCR "${PROG_ID_EEPROM}\DefaultIcon" ""				'"$INSTDIR\${WIN_EEPROM_EXE}",-101'
+  WriteRegExpandStr HKCR "${PROG_ID_EEPROM}\shell\open\command" ""			'"$INSTDIR\${WIN_APP_EXE}" "%1"'
+
+	WriteRegStr HKCR ".eeprom"			""				"${PROG_ID_EEPROM}"
+	WriteRegStr HKCR ".eeprom"			"PerceivedType"			"Altus Metrum Log File"
+	WriteRegStr HKCR ".eeprom"			"Content Type"			"application/vnd.altusmetrum.eeprom"
+
+	WriteRegStr HKCR ".eeprom\OpenWithProgids"	"${PROG_ID_EEPROM}"		""
+	WriteRegStr HKCR ".eeprom\${PROG_ID_EEPROM}"	""				"${REG_NAME}"
+	
+	; .telem elements
+	
+	WriteRegStr HKCR "${PROG_ID_TELEM}"		""				"Altus Metrum Telemetry File"
+	WriteRegStr HKCR "${PROG_ID_TELEM}"		"FriendlyTypeName"		"Altus Metrum Telemetry File"
+	WriteRegStr HKCR "${PROG_ID_TELEM}\CurVer"	""				"${PROG_ID_TELEM}"
+	WriteRegStr HKCR "${PROG_ID_TELEM}\DefaultIcon" ""				'"$INSTDIR\${WIN_TELEM_EXE}",-101'
+  WriteRegExpandStr HKCR "${PROG_ID_TELEM}\shell\open\command" ""			'"$INSTDIR\${WIN_APP_EXE}" "%1"'
+
+	WriteRegStr HKCR ".telem"			""				"${PROG_ID_TELEM}"
+	WriteRegStr HKCR ".telem"			"PerceivedType"			"Altus Metrum Telemetry File"
+	WriteRegStr HKCR ".telem"			"Content Type"			"application/vnd.altusmetrum.telemetry"
+
+	WriteRegStr HKCR ".telem\OpenWithProgids"	"${PROG_ID_TELEM}"		""
+	WriteRegStr HKCR ".telem\${PROG_ID_TELEM}"	""				"${REG_NAME}"
+
+	Call RefreshShellIcons
+SectionEnd
+	
+Section "Uninstaller"
+
+	; Deal with the uninstaller
+
+	${DisableX64FSRedirection}
+	SetOutPath $INSTDIR
+
+	; Write the install path to the registry
+	WriteRegStr HKLM "SOFTWARE\${REG_NAME}" "Install_Dir" "$INSTDIR"
+
+	; Write the uninstall keys for windows
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "DisplayName" "${REG_NAME}"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "UninstallString" '"$INSTDIR\uninstall-${REG_NAME}.exe"'
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "NoModify" "1"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "NoRepair" "1"
+
+	WriteUninstaller "uninstall-${REG_NAME}.exe"
+SectionEnd
+
+Section "Uninstall"
+
+	${DisableX64FSRedirection}
+
+	DeleteRegKey   HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}"
+	DeleteRegKey   HKLM "SOFTWARE\${REG_NAME}"
+
+	DetailPrint "Delete uninstall reg entries"
+
+	DeleteRegKey   HKCR "${PROG_ID_EEPROM}"
+	DeleteRegKey   HKCR "${PROG_ID_TELEM}"
+
+	DeleteRegKey   HKCR ".eeprom\${PROG_ID_EEPROM}"
+	DeleteRegValue HKCR ".eeprom\OpenWithProgids" "${PROG_ID_EEPROM}"
+
+	DeleteRegKey   HKCR ".telem\${PROG_ID_TELEM}"
+	DeleteRegValue HKCR ".telem\OpenWithProgids" "${PROG_ID_TELEM}"
+
+	DetailPrint "Delete file association reg entries"
+
+	Delete "$INSTDIR\${FAT_NAME}"
+	Delete "$INSTDIR\uninstall-${REG_NAME}.exe"
+
+	Delete "$INSTDIR\${WIN_APP_ICON}"
+	Delete "$INSTDIR\${WIN_APP_EXE}"
+
+	; Remove shortcuts, if any
+	Delete "$SMPROGRAMS\${REG_NAME}.lnk"
+	Delete "$DESKTOP\${REG_NAME}.lnk"
+	
+	Call un.RefreshShellIcons
+SectionEnd

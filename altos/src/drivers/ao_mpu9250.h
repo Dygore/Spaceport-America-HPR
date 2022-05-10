@@ -1,0 +1,340 @@
+/*
+ * Copyright © 2012 Keith Packard <keithp@keithp.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ */
+
+#ifndef _AO_MPU9250_H_
+#define _AO_MPU9250_H_
+
+#ifndef M_PI
+#define M_PI 3.1415926535897832384626433
+#endif
+
+#define MPU9250_ADDR_WRITE	0xd0
+#define MPU9250_ADDR_READ	0xd1
+
+/* From Tridge */
+#define MPUREG_XG_OFFS_TC 0x00
+#define MPUREG_YG_OFFS_TC 0x01
+#define MPUREG_ZG_OFFS_TC 0x02
+#define MPUREG_X_FINE_GAIN 0x03
+#define MPUREG_Y_FINE_GAIN 0x04
+#define MPUREG_Z_FINE_GAIN 0x05
+#define MPUREG_XA_OFFS_H 0x06 // X axis accelerometer offset (high byte)
+#define MPUREG_XA_OFFS_L 0x07 // X axis accelerometer offset (low byte)
+#define MPUREG_YA_OFFS_H 0x08 // Y axis accelerometer offset (high byte)
+#define MPUREG_YA_OFFS_L 0x09 // Y axis accelerometer offset (low byte)
+#define MPUREG_ZA_OFFS_H 0x0A // Z axis accelerometer offset (high byte)
+#define MPUREG_ZA_OFFS_L 0x0B // Z axis accelerometer offset (low byte)
+#define MPUREG_PRODUCT_ID 0x0C // Product ID Register
+#define MPUREG_XG_OFFS_USRH 0x13 // X axis gyro offset (high byte)
+#define MPUREG_XG_OFFS_USRL 0x14 // X axis gyro offset (low byte)
+#define MPUREG_YG_OFFS_USRH 0x15 // Y axis gyro offset (high byte)
+#define MPUREG_YG_OFFS_USRL 0x16 // Y axis gyro offset (low byte)
+#define MPUREG_ZG_OFFS_USRH 0x17 // Z axis gyro offset (high byte)
+#define MPUREG_ZG_OFFS_USRL 0x18 // Z axis gyro offset (low byte)
+
+#define MPU9250_SMPRT_DIV	0x19
+
+#define MPU9250_CONFIG		0x1a
+
+#define  MPU9250_CONFIG_FIFO_MODE	6
+# define  MPU9250_CONFIG_FIFO_MODE_REPLACE	0
+# define  MPU9250_CONFIG_FIFO_MODE_DROP		1
+
+#define  MPU9250_CONFIG_EXT_SYNC_SET	3
+#define  MPU9250_CONFIG_EXT_SYNC_SET_DISABLED		0
+#define  MPU9250_CONFIG_EXT_SYNC_SET_TEMP_OUT_L		1
+#define  MPU9250_CONFIG_EXT_SYNC_SET_GYRO_XOUT_L	2
+#define  MPU9250_CONFIG_EXT_SYNC_SET_GYRO_YOUT_L	3
+#define  MPU9250_CONFIG_EXT_SYNC_SET_GYRO_ZOUT_L	4
+#define  MPU9250_CONFIG_EXT_SYNC_SET_ACCEL_XOUT_L	5
+#define  MPU9250_CONFIG_EXT_SYNC_SET_ACCEL_YOUT_L	6
+#define  MPU9250_CONFIG_EXT_SYNC_SET_ACCEL_ZOUT_L	7
+#define  MPU9250_CONFIG_EXT_SYNC_SET_MASK		7
+
+#define  MPU9250_CONFIG_DLPF_CFG	0
+#define  MPU9250_CONFIG_DLPF_CFG_250			0
+#define  MPU9250_CONFIG_DLPF_CFG_184			1
+#define  MPU9250_CONFIG_DLPF_CFG_92			2
+#define  MPU9250_CONFIG_DLPF_CFG_41			3
+#define  MPU9250_CONFIG_DLPF_CFG_20			4
+#define  MPU9250_CONFIG_DLPF_CFG_10			5
+#define  MPU9250_CONFIG_DLPF_CFG_5			6
+#define  MPU9250_CONFIG_DLPF_CFG_MASK			7
+
+#define MPU9250_GYRO_CONFIG	0x1b
+# define MPU9250_GYRO_CONFIG_XG_ST	7
+# define MPU9250_GYRO_CONFIG_YG_ST	6
+# define MPU9250_GYRO_CONFIG_ZG_ST	5
+# define MPU9250_GYRO_CONFIG_FS_SEL	3
+# define MPU9250_GYRO_CONFIG_FS_SEL_250		0
+# define MPU9250_GYRO_CONFIG_FS_SEL_500		1
+# define MPU9250_GYRO_CONFIG_FS_SEL_1000	2
+# define MPU9250_GYRO_CONFIG_FS_SEL_2000	3
+# define MPU9250_GYRO_CONFIG_FS_SEL_MASK	3
+# define MPU9250_GYRO_CONFIG_FCHOICE_B	0
+# define MPU9250_GYRO_CONFIG_FCHOICE_B_8800	3
+# define MPU9250_GYRO_CONFIG_FCHOICE_B_3600	2
+# define MPU9250_GYRO_CONFIG_FCHOICE_B_LOW	0
+
+#define MPU9250_ACCEL_CONFIG	0x1c
+# define MPU9250_ACCEL_CONFIG_XA_ST	7
+# define MPU9250_ACCEL_CONFIG_YA_ST	6
+# define MPU9250_ACCEL_CONFIG_ZA_ST	5
+# define MPU9250_ACCEL_CONFIG_AFS_SEL	3
+# define MPU9250_ACCEL_CONFIG_AFS_SEL_2G		0
+# define MPU9250_ACCEL_CONFIG_AFS_SEL_4G		1
+# define MPU9250_ACCEL_CONFIG_AFS_SEL_8G		2
+# define MPU9250_ACCEL_CONFIG_AFS_SEL_16G	3
+# define MPU9250_ACCEL_CONFIG_AFS_SEL_MASK	3
+
+#define MPU9250_MST_CTRL	0x24
+#define  MPU9250_MST_CTRL_MULT_MST_EN		7
+#define  MPU9250_MST_CTRL_WAIT_FOR_ES		6
+#define  MPU9250_MST_CTRL_SLV_3_FIFO_EN		5
+#define  MPU9250_MST_CTRL_I2C_MST_P_NSR		4
+#define  MPU9250_MST_CTRL_I2C_MST_CLK		0
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_348		0
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_333		1
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_320		2
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_308		3
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_296		4
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_286		5
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_276		6
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_267		7
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_258		8
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_500		9
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_471		10
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_444		11
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_421		12
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_400		13
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_381		14
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_364		15
+#define  MPU9250_MST_CTRL_I2C_MST_CLK_MASK		15
+
+#define MPU9250_I2C_SLV0_ADDR	0x25
+#define MPU9250_I2C_SLV0_REG	0x26
+#define MPU9250_I2C_SLV0_CTRL	0x27
+
+#define  MPU9250_I2C_SLV0_CTRL_I2C_SLV0_EN	7
+#define  MPU9250_I2C_SLV0_CTRL_I2C_SLV0_BYTE_SW	6
+#define  MPU9250_I2C_SLV0_CTRL_I2C_SLV0_REG_DIS	5
+#define  MPU9250_I2C_SLV0_CTRL_I2C_SLV0_GRP	4
+#define  MPU9250_I2C_SLV0_CTRL_I2C_SLV0_LENG	0
+
+#define MPU9250_I2C_SLV1_ADDR	0x28
+#define MPU9250_I2C_SLV1_REG	0x29
+#define MPU9250_I2C_SLV1_CTRL	0x2a
+
+#define MPU9250_I2C_SLV2_ADDR	0x2b
+#define MPU9250_I2C_SLV2_REG	0x2c
+#define MPU9250_I2C_SLV2_CTRL	0x2d
+
+#define MPU9250_I2C_SLV3_ADDR	0x2e
+#define MPU9250_I2C_SLV3_REG	0x2f
+#define MPU9250_I2C_SLV3_CTRL	0x30
+
+#define MPU9250_I2C_SLV4_ADDR	0x31
+#define MPU9250_I2C_SLV4_REG	0x32
+#define MPU9250_I2C_SLV4_DO	0x33
+#define MPU9250_I2C_SLV4_CTRL	0x34
+#define  MPU9250_I2C_SLV4_CTRL_I2C_SLV4_EN	7
+#define  MPU9250_I2C_SLV4_CTRL_SLV4_DONE_INT_EN	6
+#define  MPU9250_I2C_SLV4_CTRL_I2C_SLV4_REG_DIS	5
+#define  MPU9250_I2C_SLV4_CTRL_I2C_MST_DLY	0
+
+#define MPU9250_I2C_SLV4_DI	0x35
+
+#define MPU9250_I2C_MST_STATUS	0x36
+
+#define MPU9250_INT_PIN_CFG	0x37
+
+#define MPU9250_INT_ENABLE	0x38
+#define  MPU9250_INT_ENABLE_WOM_EN		6
+#define  MPU9250_INT_ENABLE_FIFO_OFLOW_EN	4
+#define  MPU9250_INT_ENABLE_FSYNC_INT_EN	3
+#define  MPU9250_INT_ENABLE_RAW_RDY_EN		0
+
+#define MPU9250_INT_STATUS	0x3a
+#define  MPU9250_INT_STATUS_WOM_INT		6
+#define  MPU9250_INT_STATUS_FIFO_OFLOW_INT	4
+#define  MPU9250_INT_STATUS_FSYNC_INT		3
+#define  MPU9250_INT_STATUS_RAW_RDY_INT		0
+
+#define MPU9250_ACCEL_XOUT_H		0x3b
+#define MPU9250_ACCEL_XOUT_L		0x3c
+#define MPU9250_ACCEL_YOUT_H		0x3d
+#define MPU9250_ACCEL_YOUT_L		0x3e
+#define MPU9250_ACCEL_ZOUT_H		0x3f
+#define MPU9250_ACCEL_ZOUT_L		0x40
+#define MPU9250_TEMP_H			0x41
+#define MPU9250_TEMP_L			0x42
+#define MPU9250_GYRO_XOUT_H		0x43
+#define MPU9250_GYRO_XOUT_L		0x44
+#define MPU9250_GYRO_YOUT_H		0x45
+#define MPU9250_GYRO_YOUT_L		0x46
+#define MPU9250_GYRO_ZOUT_H		0x47
+#define MPU9250_GYRO_ZOUT_L		0x48
+
+#define MPU9250_I2C_MST_DELAY_CTRL	0x67
+
+#define  MPU9250_I2C_MST_DELAY_CTRL_DELAY_ES_SHADOW	7
+#define  MPU9250_I2C_MST_DELAY_CTRL_I2C_SLV4_DLY_EN	4
+#define  MPU9250_I2C_MST_DELAY_CTRL_I2C_SLV3_DLY_EN	3
+#define  MPU9250_I2C_MST_DELAY_CTRL_I2C_SLV2_DLY_EN	2
+#define  MPU9250_I2C_MST_DELAY_CTRL_I2C_SLV1_DLY_EN	1
+#define  MPU9250_I2C_MST_DELAY_CTRL_I2C_SLV0_DLY_EN	0
+
+#define MPU9250_SIGNAL_PATH_RESET	0x68
+#define MPU9250_SIGNAL_PATH_RESET_GYRO_RESET	2
+#define MPU9250_SIGNAL_PATH_RESET_ACCEL_RESET	1
+#define MPU9250_SIGNAL_PATH_RESET_TEMP_RESET	0
+
+#define MPU9250_USER_CTRL		0x6a
+#define MPU9250_USER_CTRL_FIFO_EN		6
+#define MPU9250_USER_CTRL_I2C_MST_EN		5
+#define MPU9250_USER_CTRL_I2C_IF_DIS		4
+#define MPU9250_USER_CTRL_FIFO_RESET		2
+#define MPU9250_USER_CTRL_I2C_MST_RESET		1
+#define MPU9250_USER_CTRL_SIG_COND_RESET	0
+
+#define MPU9250_PWR_MGMT_1	0x6b
+#define MPU9250_PWR_MGMT_1_DEVICE_RESET		7
+#define MPU9250_PWR_MGMT_1_SLEEP		6
+#define MPU9250_PWR_MGMT_1_CYCLE		5
+#define MPU9250_PWR_MGMT_1_TEMP_DIS		3
+#define MPU9250_PWR_MGMT_1_CLKSEL		0
+#define MPU9250_PWR_MGMT_1_CLKSEL_INTERNAL		0
+#define MPU9250_PWR_MGMT_1_CLKSEL_PLL_X_AXIS		1
+#define MPU9250_PWR_MGMT_1_CLKSEL_PLL_Y_AXIS		2
+#define MPU9250_PWR_MGMT_1_CLKSEL_PLL_Z_AXIS		3
+#define MPU9250_PWR_MGMT_1_CLKSEL_PLL_EXTERNAL_32K	4
+#define MPU9250_PWR_MGMT_1_CLKSEL_PLL_EXTERNAL_19M	5
+#define MPU9250_PWR_MGMT_1_CLKSEL_STOP			7
+#define MPU9250_PWR_MGMT_1_CLKSEL_MASK			7
+
+#define MPU9250_PWR_MGMT_2	0x6c
+
+#define MPU9250_WHO_AM_I	0x75
+#define MPU9250_I_AM_9250	0x71
+
+/* AK8963 mag sensor on the I2C bus */
+
+#define MPU9250_MAG_ADDR	0x0c
+
+#define MPU9250_MAG_WIA		0x00
+#define  MPU9250_MAG_WIA_VALUE		0x48
+
+#define MPU9250_MAG_INFO	0x01
+#define MPU9250_MAG_ST1	0x02
+#define  MPU9250_MAG_ST1_DOR		1
+#define  MPU9250_MAG_ST1_DRDY		0
+
+#define MPU9250_MAG_HXL		0x03
+#define MPU9250_MAG_HXH		0x04
+#define MPU9250_MAG_HYL		0x05
+#define MPU9250_MAG_HYH		0x06
+#define MPU9250_MAG_HZL		0x07
+#define MPU9250_MAG_HZH		0x08
+#define MPU9250_MAG_ST2		0x09
+#define  MPU9250_MAG_ST2_BITM		4
+#define  MPU9250_MAG_ST2_HOFL		3
+
+#define MPU9250_MAG_CNTL1	0x0a
+#define  MPU9250_MAG_CNTL1_MODE		0
+#define  MPU9250_MAG_CNTL1_MODE_POWER_DOWN	0x0
+#define  MPU9250_MAG_CNTL1_MODE_SINGLE		0x1
+#define  MPU9250_MAG_CNTL1_MODE_CONT_1		0x2	/* 8Hz */
+#define  MPU9250_MAG_CNTL1_MODE_CONT_2		0x6	/* 100Hz */
+#define  MPU9250_MAG_CNTL1_MODE_EXTERNAL	0x4
+#define  MPU9250_MAG_CNTL1_MODE_SELF_TEST	0x8
+#define  MPU9250_MAG_CNTL1_MODE_FUSE_ACCESS	0xf
+
+#define  MPU9250_MAG_CNTL1_BIT		4
+#define  MPU9250_MAG_CNTL1_BIT_14		0
+#define  MPU9250_MAG_CNTL1_BIT_16		1
+
+#define MPU9250_MAG_CNTL2	0x0b
+#define  MPU9250_MAG_CNTL2_SRST		0
+
+#define MPU9250_MAG_ASTC	0x0c
+#define  MPU9250_MAG_ASTC_SELF		6
+
+#define MPU9250_MAG_TS1		0x0d
+#define MPU9250_MAG_TS2		0x0e
+#define MPU9250_MAG_I2CDIS	0x0f
+#define  MPU9250_MAG_I2CDIS_VALUE	0x1d
+
+#define MPU9250_MAG_ASAX	0x10
+#define MPU9250_MAG_ASAY	0x11
+#define MPU9250_MAG_ASAZ	0x12
+
+/* Self test acceleration is approximately 0.5g */
+#define MPU9250_ST_ACCEL(full_scale)	(32767 / ((full_scale) * 2))
+
+/* Self test gyro is approximately 50°/s */
+#define MPU9250_ST_GYRO(full_scale)	((int16_t) (((int32_t) 32767 * (int32_t) 50) / (full_scale)))
+
+#define MPU9250_GYRO_FULLSCALE	((float) 2000 * M_PI/180.0)
+
+static inline float
+ao_mpu9250_gyro(float sensor) {
+	return sensor * ((float) (MPU9250_GYRO_FULLSCALE / 32767.0));
+}
+
+#define MPU9250_ACCEL_FULLSCALE	16
+
+static inline float
+ao_mpu9250_accel(int16_t sensor) {
+	return (float) sensor * ((float) (MPU9250_ACCEL_FULLSCALE * GRAVITY / 32767.0));
+}
+
+struct ao_mpu9250_sample {
+	int16_t		accel_x;
+	int16_t		accel_y;
+	int16_t		accel_z;
+	int16_t		temp;
+	int16_t		gyro_x;
+	int16_t		gyro_y;
+	int16_t		gyro_z;
+	int16_t		mag_x;
+	int16_t		mag_y;
+	int16_t		mag_z;
+};
+
+extern struct ao_mpu9250_sample	ao_mpu9250_current;
+
+void
+ao_mpu9250_init(void);
+
+/* Product ID Description for MPU9250
+ * high 4 bits low 4 bits
+ * Product Name Product Revision
+ */
+#define MPU9250ES_REV_C4 0x14	/* 0001 0100 */
+#define MPU9250ES_REV_C5 0x15	/* 0001 0101 */
+#define MPU9250ES_REV_D6 0x16	/* 0001 0110 */
+#define MPU9250ES_REV_D7 0x17	/* 0001 0111 */
+#define MPU9250ES_REV_D8 0x18	/* 0001 1000 */
+#define MPU9250_REV_C4 0x54	/* 0101 0100 */
+#define MPU9250_REV_C5 0x55	/* 0101 0101 */
+#define MPU9250_REV_D6 0x56	/* 0101 0110 */
+#define MPU9250_REV_D7 0x57	/* 0101 0111 */
+#define MPU9250_REV_D8 0x58	/* 0101 1000 */
+#define MPU9250_REV_D9 0x59	/* 0101 1001 */
+
+#endif /* _AO_MPU9250_H_ */

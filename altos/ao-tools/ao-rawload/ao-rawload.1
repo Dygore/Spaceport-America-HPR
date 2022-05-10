@@ -1,0 +1,65 @@
+.\"
+.\" Copyright © 2009 Keith Packard <keithp@keithp.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-RAWLOAD 1 "ao-rawload" ""
+.SH NAME
+ao-rawload \- flash a program to a AltOS device
+.SH SYNOPSIS
+.B "ao-rawload"
+[\-T \fItty-device\fP]
+[\--tty \fItty-device\fP]
+[\-D \fIaltos-device\fP]
+[\--device \fIaltos-device\fP]
+\fIfile.ihx\fP
+.SH DESCRIPTION
+.I ao-rawload
+loads the specified .ihx file, without modification, into the target
+device flash or ram (depending on the base address of the .ihx file).
+.SH OPTIONS
+.TP
+\-T tty-device | --tty tty-device
+This selects which tty device the debugger uses to communicate with
+the target device. The special name 'BITBANG' directs ao-dbg to use
+the cp2103 connection, otherwise this should be a usb serial port
+connected to a suitable cc1111 debug node.
+.TP
+\-D AltOS-device | --device AltOS-device
+Search for a connected device. This requires an argument of one of the
+following forms:
+.IP
+TeleMetrum:2
+.br
+TeleMetrum
+.br
+2
+.IP
+Leaving out the product name will cause the tool to select a suitable
+product, leaving out the serial number will cause the tool to match
+one of the available devices.
+.TP
+\-r | --run
+After the file has been loaded, set the PC to the base address of the
+image and resume execution there.
+the .ihx file.
+.SH USAGE
+.I ao-rawload
+reads the specified .ihx file into memory. It then connects to the
+specified target device and writes the program to the target device
+memory and, optionally, starts the program executing.
+.SH AUTHOR
+Keith Packard

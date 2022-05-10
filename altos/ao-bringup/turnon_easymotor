@@ -1,0 +1,75 @@
+#!/bin/sh
+
+PRODUCT=EasyMotor
+VERSION=2
+REPO=~/altusmetrumllc/Binaries
+
+if [ -x /usr/bin/dfu-util ]; then
+    DFU_UTIL=/usr/bin/dfu-util
+else
+    echo "Can't find dfu-util! Aborting."
+    exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2021 by Bdale Garbee.  Released under GPL v3"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION"
+echo "\t\twith USB cable attached"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+
+echo $DFU_UTIL
+
+$DFU_UTIL -v -v -R -a 0 -s 0x08000000:leave -D $REPO/loaders/easymotor-v$VERSION*.bin
+
+sleep 3
+
+$USBLOAD --serial=$SERIAL $REPO/easymotor-v$VERSION*.elf || exit 1
+
+sleep 5
+
+dev=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "$PRODUCT found on $dev"
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+failed=1
+while [ $failed =  1 ]; do
+    ../ao-tools/ao-cal-accel/ao-cal-accel $dev
+    failed=$?
+done
+
+./test-easymotor
+
+exit $?

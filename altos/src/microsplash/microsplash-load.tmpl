@@ -1,0 +1,21 @@
+#!/bin/sh
+dir=`dirname $0`
+
+HEX="$dir"/"%HEX%"
+LOADCMD="%LOADCMD%"
+LOADARG="%LOADARG%"
+LOADSLOW="%LOADSLOW%"
+LOADFAST=""
+
+case "$1" in
+slow)
+	LOADSPEED="$LOADSLOW"
+	;;
+*)
+	LOADSPEED="$LOADFAST"
+	;;
+esac
+
+echo ${LOADCMD} ${LOADSPEED} ${LOADARG}${HEX}
+${LOADCMD} ${LOADSPEED} ${LOADARG}${HEX}
+/usr/games/xcowsay --cow-size=large --at=1000,500 "${HEX} finished"

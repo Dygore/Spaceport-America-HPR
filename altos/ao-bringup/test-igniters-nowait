@@ -1,0 +1,34 @@
+#!/bin/sh
+
+dev="$1"
+shift
+args=""
+
+for igniter in "$@"; do
+    case "$igniter" in
+	-*)
+	    args="$args $igniter"
+	    ;;
+	*)
+	    pass="n"
+	    while [ $pass != "y" ]; do
+
+		echo "Testing $igniter igniter."
+		../ao-tools/ao-test-igniter/ao-test-igniter --tty="$dev" $args $igniter
+
+		case $? in
+		    0)
+			echo "pass"
+			pass="y"
+			;;
+		    *)
+			echo -n "Failed. Try again. Press enter to continue..."
+			read foo < /dev/tty
+			;;
+		esac
+	    done
+	    ;;
+    esac
+done
+
+exit 0

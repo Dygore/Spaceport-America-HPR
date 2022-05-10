@@ -1,0 +1,174 @@
+Adding a product to the release
+
+	Make sure the firmware and loader get built by default in
+	src/Makefile
+
+	Add firmware targets to fat_altos target in Makefile.am
+	
+	Add the firmware to altosui/Makefile.am
+
+	Add the firmware to altosui/altos-windows.nsi.in
+
+	Add the firmware to telegps/Makefile.am
+
+	Add the firmware to telegps/telegps-windows.nsi.in
+
+	Add the firmware to Releasing
+
+These are Keith's notes on how to do a release
+
+	- update the version and date in configure.ac if Bdale hasn't already
+
+	- update the ANDROID_VERSION in configure.ac if releasing AltosDroid
+
+	- follow instructions in doc/RELNOTES
+
+	- make sure there is a doc/release-notes-<version>.inc
+
+	- make sure doc/release-notes.inc points at that
+
+	- make sure doc/Makefile points at that too
+
+	- confirm doc/header.inc has correct copyright year
+
+
+These are Bdale's notes on how to do a release.
+
+	- make sure Debian build environment is up to date
+		sudo cowbuilder --update
+
+	- make sure fat build environment is up to date
+		sudo apt update && sudo apt upgrade
+
+	- ensure i386 build support is available, and we have tools to build
+	  installers for Windows and Mac OS X
+
+		sudo apt update
+		sudo apt install genisoimage nsis \
+			gcc-i686-linux-gnu gcc-aarch64-linux-gnu \
+			gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf
+
+	- make sure ~/web/altusmetrum has no pending pullable commits
+
+	git checkout master
+
+	- update the version in configure.ac if Keith hasn't already
+
+	- if this is an x.y release, then:
+		git checkout -b branch-<version>
+
+	- if this is an x.y.z release, then:
+		git checkout branch-<version>		# the x.y parts only
+		- cherry-pick or merge appropriate content from master
+	
+	- make sure there is a doc/release-notes-<version>.inc
+	- make sure that doc/*.txt have the right copyright year and the
+	  new release is included
+	- confirm doc/header.inc has correct copyright year
+	- make absolutely sure checked-out tree is "clean" 
+	- make absolutely sure any commits Keith might have pushed to branches
+	  like debian are already pulled
+
+        git log > ChangeLog
+	git commit -a
+	git tag -a <version>			# full x.y.z version
+
+	- make sure .git/gbp.conf set to use branch-<version> as upstream
+
+	git checkout debian
+	git merge branch-<version>
+
+	- verify debian/changelog is "clean" ending in last release version
+	- craft a suitable debian/changelog entry, possibly using:
+	gbp dch --release --multimaint-merge --new-version=<version>-1 
+
+        git commit -n debian/changelog -m "update changelog for Debian build"
+
+	- if this is a -1 release, then
+		gbp buildpackage --git-no-pristine-tar \
+			--git-upstream-branch=branch-<version> \ # eg 1.3
+			--git-upstream-tag=<version>	         # eg 1.3.1
+		pristine-tar commit \
+			../build-area/altos_<version>.orig.tar.gz \
+			branch-<version>
+	  else if this is not a -1 release
+		gbp buildpackage
+
+	git tag debian/<version>
+
+	- at this point we have packages in ~/debian/build-area/altos, now
+	  we move on to the non-Debian part of the release process
+
+	make distclean	(just to be sure, this should do nothing)
+
+	./autogen.sh --enable-multi-arch \
+		--with-fat-dir=/home/bdale/web/altusmetrum/
+	make && make fat
+
+	- store a stable copy of ARM binaries for production use
+
+	cp src/chaoskey-v1.0/{*.elf,*.ihx,*.bin,*.map} \
+	   src/easymega-v[1-2].0/{*.elf,*.ihx,*.map} \
+	   src/easymini-v[1-2].0/{*.elf,*.ihx,*.map} \
+	   src/easymotor-v2/{*.elf,*.ihx,*.map} \
+	   src/easytimer-v1/{*.elf,*.ihx,*.map} \
+	   src/telebt-v[3-4].0/{*.elf,*.ihx,*.map} \
+	   src/teledongle-v3.0/{*.elf,*.ihx,*.map} \
+	   src/telegps-v[1-2].0/{*.elf,*.ihx,*.map} \
+	   src/telemega-v[1-5].0/{*.elf,*.ihx,*.map} \
+	   src/telemetrum-v[2-3].0/{*.elf,*.ihx,*.map} \
+	   src/telemini-v3.0/{*.elf,*.ihx,*.map} \
+	   src/telelco-v2.0/{*.elf,*.ihx,*.map} \
+	   src/telefireeight-v[1-2].0/{*.elf,*.ihx,*.map} \
+	   ~/altusmetrumllc/Binaries/
+	cp src/chaoskey-v1.0/flash-loader/{*.elf,*.bin,*.map} \
+	   src/easymega-v[1-2].0/flash-loader/*.elf \
+	   src/easymini-v[1-2].0/flash-loader/*.elf \
+	   src/easymotor-v2/flash-loader/*.elf \
+	   src/easytimer-v1/flash-loader/*.elf \
+	   src/telebt-v[3-4].0/flash-loader/{*.elf,*.bin,*.map} \
+	   src/teledongle-v3.0/flash-loader/*.elf \
+	   src/telegps-v[1-2].0/flash-loader/{*.elf,*.bin,*.map} \
+	   src/telemega-v[1-5].0/flash-loader/*.elf \
+	   src/telemetrum-v[2-3].0/flash-loader/*.elf \
+	   src/telemini-v3.0/flash-loader/{*.elf,*.bin,*.map} \
+	   src/telelco-v2.0/flash-loader/*.elf \
+	   src/telefireeight-v[1-2].0/flash-loader/*.elf \
+	   ~/altusmetrumllc/Binaries/loaders/
+	(cd ~/altusmetrumllc ; git add Binaries ; git commit -a) 
+	- remove previous versions (only keep latest release)
+	(cd ~/altusmetrumllc ; git push) 
+
+	- Push new release to web site
+
+	make fat-install
+	(cd doc ; make publish)
+
+	(cd ~/web/altusmetrum/ && \
+		git add */releases && git commit -m'Release <rev>' && \
+		git push origin master)
+
+	- upload the Debian package 
+
+	- clean up
+
+	sudo debian/rules clean
+	git push origin master branch-<version> debian pristine-tar
+	git push --tags
+
+Testing before a release
+
+	To verify that a build works, the following need to be checked
+	on each platform:
+
+	1) Install package
+
+	2) Connect TM *and* TD devices. Verify that you can Monitor
+	   Flight from the TD and Configure Telemetrum from the TM.
+
+	3) Replay Flight, using your favorite .eeprom file. Check
+	   each tab, especially the 'Site Map' tab. Make sure the
+	   sound works.
+
+	4) Graph Data. Graph a favorite .eeprom file. Make sure you
+	   can zoom in on some region of the graph.

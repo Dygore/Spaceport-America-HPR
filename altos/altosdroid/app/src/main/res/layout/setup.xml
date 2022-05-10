@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+ Copyright © 2016 Keith Packard <keithp@keithp.com>
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+  <TableLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:stretchColumns="2,3"
+      android:layout_weight="0"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      <TextView
+	  android:id="@+id/select_rate_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/telemetry_rate"
+	  />
+      <Spinner android:id="@+id/select_rate"
+	       android:layout_width="fill_parent"
+	       android:layout_height="wrap_content"
+	       android:prompt="@string/telemetry_rate"
+	       android:spinnerMode="dropdown"
+	       />
+    </TableRow>
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      <TextView
+	  android:id="@+id/set_units_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/set_units"
+	  />
+      <Spinner android:id="@+id/set_units"
+	       android:layout_width="fill_parent"
+	       android:layout_height="wrap_content"
+	       android:prompt="@string/set_units"
+	       android:spinnerMode="dropdown"
+	       />
+    </TableRow>
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      <TextView
+	  android:id="@+id/font_size_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/font_size"
+	  />
+      <Spinner android:id="@+id/font_size"
+	       android:layout_width="fill_parent"
+	       android:layout_height="wrap_content"
+	       android:prompt="@string/font_size"
+	       android:spinnerMode="dropdown"
+	       />
+    </TableRow>
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      <TextView
+	  android:id="@+id/map_type_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/map_type"
+	  />
+      <Spinner android:id="@+id/map_type"
+	       android:layout_width="fill_parent"
+	       android:layout_height="wrap_content"
+	       android:prompt="@string/map_type"
+	       android:spinnerMode="dropdown"
+	       />
+    </TableRow>
+    <TableRow
+	android:layout_gravity="center"
+	android:layout_weight="1"
+	android:padding="2dip"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+      <TextView
+	  android:id="@+id/map_source_label"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/map_source"
+	  />
+      <Spinner android:id="@+id/map_source"
+	       android:layout_width="fill_parent"
+	       android:layout_height="wrap_content"
+	       android:prompt="@string/map_source"
+	       android:spinnerMode="dropdown"
+	       />
+    </TableRow>
+  </TableLayout>
+  <Button android:id="@+id/preload_maps"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+	  android:text="@string/preload_maps"
+	  />
+  <Button android:id="@+id/manage_frequencies"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+	  android:text="@string/manage_frequencies"
+	  />
+  <Button android:id="@+id/done"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+	  android:text="@string/done"
+	  />
+</LinearLayout>

@@ -1,0 +1,7 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+include $(TOPDIR)/stm32f4/Makefile-stm32f4.defs
+
+LDFLAGS=$(CFLAGS) -L$(TOPDIR)/stm32f4 -Wl,-Taltos.ld -n

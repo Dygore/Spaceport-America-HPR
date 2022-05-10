@@ -1,0 +1,229 @@
+= Loading Map Tiles from Google Maps
+Keith Packard <keithp@keithp.com>
+:title-logo-image: image:load-maps.png[]
+:copyright: Keith Packard 2018
+:doctype: article
+:stylesheet: am-notoc.css
+:linkcss:
+:pdf-stylesdir: .
+:pdf-style: altusmetrum
+:pdf-fontsdir: fonts
+
+== The Google Maps Problem
+
+Until recently, Google Maps could be used without fee to fetch map
+tiles. Applications could load map tiles anonymously or using a key;
+when used anonymously, the number of tiles that could be loaded per
+day and the rate at which tiles could be loaded was throttled to make
+the API practical only for development purpose. With an application
+key, the number of tiles available per day was much higher, and there
+was no rate limiting. This was usually sufficient for Altos Metrum
+customer use.
+
+However, this has changed and now there is no way to load map tiles
+anonymously, and any application key must be tied to a credit
+card. The tile cap for free usage is now monthly instead of
+daily. Because the key is tied to a credit card, we should not ship it
+with the application any longer. And because the cap is monthly
+instead of daily, we need some way to control usage by our
+applications.
+
+=== The Proposed Solution — An Intermediate Service
+
+To give us some measure of control over tile loading, we will want to
+interpose a server controlled by us between the application and Google
+Maps. This will let us store the Google Maps key in a secure location,
+and also control tile loading by each user.
+
+image::map-loading.svg[align="center"]
+
+== AltOS Map Service
+
+This service receives a URL request and replies with either a map tile
+or an error. It is functionally equivalent to the Google Maps service,
+except that it can control use of the Google Maps API.
+
+=== AltOS Map CGI Script
+
+The AltOS Map CGI Script is a straightforward script which connects to
+the AltOS Map Cache Manager, transmits a URL describing the desired
+map tile and receives back a filename (or error), then sends the
+contents of that file back through Apache to the requesting
+application. The name of the script is 'altos-map'.
+
+==== Inputs
+
+The AltOS Map CGI Script will parse the provided AltOS Map URI or
+AltOS Version URI.
+
+==== Outputs
+
+For AltOS Map URLs, the CGI Script will return either the contents of
+the associated Google Map tile or an error indicating what failed:
+
+_200 OK_: The map tile image data or version information
+
+_400 Bad Request_: The URL is malformed or not compatible with the
+version supported by the service
+
+_403 Forbidden_: The map tile is outside the areas supported by the
+current AltOS Map service area
+
+_408 Request Timeout_: Attempts to fetch the tile from Google Maps
+timed out.
+
+_503 Service Unavailable_: The service is temporarily refusing to
+satisfy this request due to resource limitations.
+
+=== AltOS Map Cache Manager
+
+This is a service running on the local machine and available over a
+local network socket. It translates an AltOS Map URL into a local
+filename containing the contents of the associated Google Maps
+tile. The name of the cache manager is 'altos-mapd'. It will listen
+for requests on port 16717.
+
+=== AltOS Map URI
+
+AltOS uses a limited subset of the Google Maps, and the AltOS Map URIs
+only encode those elements which we currently use. This specification
+describes AltOS Map URI format version 1.0.0. The application is
+required to provide URIs compatible with the format supported by the
+server. The elements of the  elements are:
+
+ * Latitude of center point
+ * Longitude of center point
+ * Zoom level (from bushes to planets)
+
+Encoding this in a URI is straightforward:
+
+\	altos-map?lat=<lat>&lon=<lon>&zoom=<zoom>
+
+Latitude and longitude are both encoded using decimal degrees with 6
+digits following the decimal point.
+
+Zoom levels can range from 1 (world) to 20 (buildings). Higher zoom
+levels show smaller areas at greater detail.
+
+The only Google Map type supported by version 1.0.0 of the service is
+“hybrid”, which combines road graphics on top of satellite images.
+
+Version 1.0.0 always returns images which are 512x512 pixels.
+
+If we need additional elements in the URL, we can add them in the
+future and bump the supported version number.
+
+=== AltOS Version URI
+
+To allow applications to discover what AltOS Map URI version is supported by the
+AltOS Map service, the application may query the version of the API
+supported using the Version URI. The application provides the version
+that it supports and the AltOS Map service returns a version not
+greater than the client version:
+
+\	altos-map?version=<client-major>.<client-minor>.<client-revision>
+\	→
+\	<server-major>.<server-minor>.<server.revision>
+
+=== AltOS Tile Request
+
+The AltOS Map CGI Script parses the Map URI and passes that
+information to the AltOS Map Cache Manager using the AltOS Tile
+Specifier syntax. This is a JSON representation of the same data
+provided by the URI:
+
+\	{
+\		"lat": <latitude>,
+\		"lon": <longitude>,
+\		"zoom": <zoom-level>,
+\		"remote_addr": "<IPv4 or IPv6 address of requesting client>"
+\	}
+
+Latitude and longitude are both encoded using decimal degrees with 6
+digits following the decimal point.
+
+=== AltOS Tile Reply
+
+Sent back from the Cache Manager to the CGI Script, this encodes the
+status of the request and the filename of any tile data available. It
+is encoded in JSON format:
+
+\	{
+\		"status": <HTTP status>,
+\		"filename": "<absolute path to image file>",
+\		"content_type": "<HTTP content-type>"
+\	}
+
+The “filename” and “content-type” elements are only included when
+the status is _200 OK_.
+
+=== AltOS Tile Filename
+
+While the current AltOS Map URI version only supports a limited subset
+of the Google Maps functionality, we'll encode more of that data in
+filenames to allow for easy expansion of functionality in the
+future. The elements of an AltOS Tile filename consist of :
+
+ * Latitude, with N/S indicator (instead of a sign)
+ * Longitude, with E/W indicator (instead of a sign)
+ * Map type.
+ * Zoom level
+ * Scale factor. Scale, and the preceding hyphen are omitted for a scale factor of 1.
+ * Image format suffix. '.jpg' for JPEG files and '.png' for PNG files.
+
+Latitude and longitude are both encoded using decimal degrees with 6
+digits following the decimal point.
+
+Map type is one of :
+
+ _hybrid_: Road graphics over satellite images
+ _roadmap_: Symbolic road map
+ _satellite_: Un-annotated satellite images
+ _terrain_: Topographic map
+
+Here's what map filenames look like:
+
+\	map-{N,S}<lat>,{E,W}<lon>-<type>-<zoom>[-<scale>].<format>
+\
+\	map-N36.508532,W107.823944-hybrid-18.jpg
+
+To transmit this name from the AltOS Map Cache Manager back to the
+Altos Map CGI script, the filename will be wrapped in a JSON string
+
+== Implementation
+
+The AltOS Map CGI Script and AltOS Map Cache Manager will both be
+implemented in Java as much of the required Google Maps infrastructure
+is already available in that language.
+
+=== Access Control
+
+No access control to the service is planned at this point. If
+necessary, we could implement username/password access control for each
+user of the service.
+
+=== Location Restrictions
+
+To avoid unbounded usage, and confine the utility of this service to
+AltOS users, the service will only offer map tiles whose center
+location is within 10 miles of one of the sites registered in
+our launch sites database.
+
+To allow testing of the registered launch site database, a database of
+privileged clients will be supported. Privileged clients will have
+unlimited access to the service.
+
+=== Per-Client Restrictions
+
+We should implement a per-day limit on the number of tiles provided to
+a particular requesting client. We can also rate limit clients to a
+certain number of tiles per minute to reduce the bandwidth consumed
+out of our server.
+
+=== Cache Lifetime Restrictions.
+
+The Google Maps API allows for caching of map data for no more than 30
+days. To honor this, the Cache Manager will re-fetch any requested
+tiles when the cached version is older than this. If the fetch fails,
+the cache manager will continue to serve the data from the cached
+version of the file.

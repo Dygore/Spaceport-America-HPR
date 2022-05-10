@@ -1,0 +1,103 @@
+#!/usr/bin/nickle
+
+import File;
+
+string timed_read(file f, int timeout) {
+	thread reader = fork func() {
+		try {
+			return fgets(f);
+		} catch Thread::signal(int i) {
+			return "";
+		}
+	}();
+
+	thread killer = fork func() {
+		try {
+			sleep (timeout);
+			Thread::send_signal(reader, 1);
+		} catch Thread::signal(int i) {
+			return;
+		}
+	}();
+
+	poly v = Thread::join(reader);
+	Thread::send_signal(killer, 1);
+	Thread::join(killer);
+	if (is_string(v))
+		return v;
+	return "";
+}
+
+void flush_input(file f) {
+	for (;;) {
+		string s = timed_read(f, 200);
+		if (s == "")
+			break;
+	}
+}
+
+string[*] gps(file f) {
+	string[...] x = {};
+
+	flush_input(f);
+	fprintf (f, "g\nv\n");
+	flush(f);
+	for (;;) {
+		string l = timed_read(f, 1000);
+		if (l == "") {
+			File::fprintf(stderr, "Read timedout\n");
+			exit(1);
+		}
+		x[dim(x)] = l;
+		if (String::index(l, "software-version") == 0)
+			break;
+	}
+	return x;
+}
+
+string[*] find_gps(string[*] s, string match) {
+	for (int i = 0; i < dim(s); i++)
+		if (String::index(s[i], match) >= 0)
+			return String::wordsplit(s[i], " ");
+	return (string[*]) {};
+}
+
+bool
+do_gps(file f) {
+
+	string[*] i = gps(f);
+	string[*] flags = find_gps(i, "Flags:");
+	string[*] sats = find_gps(i, "Sats:");
+
+	int actual_flags = string_to_integer(flags[1]);
+	int actual_sats = string_to_integer(sats[1]);
+
+	while ((actual_flags & (1 << 4)) == 0) {
+		printf("Flags: %s\n", flags[1]);
+		printf("Sats: %s\n", sats[1]);
+
+		sleep(1000);
+		i = gps(f);
+		flags = find_gps(i, "Flags:");
+		sats = find_gps(i, "Sats:");
+
+		actual_flags = string_to_integer(flags[1]);
+	}
+
+	printf("Flags: %s\n", flags[1]);
+	printf("Sats: %s\n", sats[1]);
+	printf("GPS locked\n");
+	return true;
+}
+
+void main () {
+	string	name = argv[1];
+	file	f = open(name, "r+");
+	bool ret = true;
+
+	if (!do_gps(f))
+		ret = false;
+	exit (ret? 0 : 1);
+}
+
+main();

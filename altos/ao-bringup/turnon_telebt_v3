@@ -1,0 +1,70 @@
+#!/bin/sh
+
+if [ -x /usr/bin/ao-flash-stm ]; then
+	FLASH_STM=/usr/bin/ao-flash-stm
+else
+	echo "Can't find ao-flash-stm!  Aborting."
+	exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+VERSION=3.0
+REPO=~/altusmetrumllc/Binaries
+
+echo "TeleBT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2015 by Bdale Garbee.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\tTeleBT v$VERSION powered from USB"
+echo "\t\twith ST-Link-V2 cabled to debug header"
+echo "\t\twith coax from UHF to frequency counter"
+echo
+echo -n "TeleBT-$VERSION serial number: "
+read SERIAL
+
+echo $FLASH_STM
+
+$FLASH_STM $REPO/loaders/telebt-v$VERSION*.elf || exit 1
+
+sleep 5
+
+$USBLOAD --serial=$SERIAL $REPO/telebt-v$VERSION*.elf || exit 1
+
+sleep 5
+
+dev=`ao-list | awk '/TeleBT-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "TeleBT found on $dev"
+	;;
+*)
+	echo 'No TeleBT-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+
+SERIAL=$SERIAL ./cal-freq $dev
+
+echo 'E 1' > $dev
+
+echo -n "checking BlueTooth functionality... "
+btdev=`hcitool scan | awk -F \- '/TeleBT/ { print $2 }'`
+if [ "$btdev" = "$SERIAL" ]; then
+	echo "working!"
+else
+	echo "device not found"
+	exit 1
+fi
+
+echo "TeleBT-v$VERSION $SERIAL is ready to ship"
+
+exit $?

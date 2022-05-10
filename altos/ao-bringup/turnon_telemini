@@ -1,0 +1,78 @@
+#!/bin/sh
+
+if [ -x /usr/bin/dfu-util ]; then
+    DFU_UTIL=/usr/bin/dfu-util
+else
+    echo "Can't find dfu-util! Aborting."
+    exit 1
+fi
+
+if which ao-usbload > /dev/null; then
+	USBLOAD=`which ao-usbload`
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+VERSION=3.0
+PRODUCT=TeleMini
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2017 by Keith Packard.  Released under GPL v2 or later"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION powered from USB"
+echo
+echo -n "$PRODUCT-$VERSION serial number: "
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+FLASH_FILE=~/altusmetrumllc/Binaries/loaders/telemini-v$VERSION-altos-flash-*.bin
+ALTOS_FILE=~/altusmetrumllc/Binaries/telemini-v$VERSION-*.elf
+#FLASH_FILE=../src/telemini-v3.0/flash-loader/telemini-v$VERSION-altos-flash-*.bin
+#ALTOS_FILE=../src/telemini-v3.0/telemini-v$VERSION-*.elf
+
+if lsusb -d 0483:df11 | grep -q STM; then
+    $DFU_UTIL -a 0 -s 0x08000000:leave -D $FLASH_FILE || exit 1
+
+    sleep 2
+fi
+
+$USBLOAD --serial=$SERIAL $ALTOS_FILE || exit 1
+
+sleep 3
+
+dev=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "$PRODUCT found on $dev"
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+
+SERIAL=$SERIAL ./cal-freq $dev
+
+echo 'E 1' > $dev
+
+./test-telemini
+
+exit $?

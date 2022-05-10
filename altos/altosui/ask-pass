@@ -1,0 +1,2 @@
+#!/bin/bash
+osascript -e 'display dialog "Password:" with hidden answer default answer "" with title "Password for '$USER'"' -e 'text returned of result'

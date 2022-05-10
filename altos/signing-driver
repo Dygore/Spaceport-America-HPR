@@ -1,0 +1,26 @@
+Notes on getting a signing key for driver signing
+
+http://technet.microsoft.com/en-us/library/dd919238%28v=ws.10%29.aspx
+
+Start MMC as administrator (start a console as administrator, launch
+mmc from there).
+
+Use MMC to add the certificates snap-in for ComputerAccount on Local computer
+
+Create a key store for our keys called AltusMetrumCertStore
+
+Add our key from ~/altusmetrumllc/altusmetrum-key.p12
+
+# Our cert is now called "Altus Metrum, LLC"
+
+Create a new directory with a simple path. Copy altusmetrum.inf to
+that directory
+
+# <path> contains the altusmetrum.inf file we ship. Make sure <path>
+# is otherwise empty or inf2cat will get confused
+
+inf2cat /driver:<path> /os:7_X86,7_X64,8_X86,8_X64
+
+signtool sign /s AltusMetrumCertStore /n “Altus Metrum, LLC"
+         /t http://timestamp.verisign.com/scripts/timestamp.dll
+         altusmetrum.cat

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info
+    xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/vnd.altusmetrum.telemetry">
+    <comment>Altus Metrum Telemetry File</comment>
+    <glob pattern="*.telem"/>
+  </mime-type>
+  <mime-type type="application/vnd.altusmetrum.eeprom">
+    <comment>Altus Metrum Eeprom Log File</comment>
+    <glob pattern="*.eeprom"/>
+  </mime-type>
+  <mime-type type="application/vnd.altusmetrum.micropeak">
+    <comment>Altus Metrum MicroPeak Log File</comment>
+    <glob pattern="*.mpd"/>
+  </mime-type>
+</mime-info>

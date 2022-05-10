@@ -1,0 +1,389 @@
+#!/usr/bin/nickle
+
+autoimport Cairo;
+autoload PRNG;
+
+int
+sign(int x)
+{
+	return x == 0 ? 0 : x < 0 ? -1 : 1;
+}
+
+int X_AXIS = 0;
+int Y_AXIS = 1;
+
+typedef struct {
+	int	major;
+	int	minor;
+	int	sign_major;
+	int	sign_minor;
+	int	e;
+	int	e1;
+	int	e3;
+	bool	first;
+} clip_context;
+
+typedef struct {
+	int	maj1, min1, maj2, min2;
+} clip_box;
+
+typedef struct {
+	int	x1, y1, x2, y2;
+} box;
+
+typedef struct {
+	int	x, y;
+} point;
+
+typedef struct {
+	int	x1, y1, x2, y2;
+	box	b;
+	point[]	clipped;
+	point[]	run;
+} test;
+
+box	bounds = { .x1 = 10, .x2 = 30, .y1 = 10, .y2 = 30 };
+
+int
+div_ceil(a, b) {
+	a += b;
+	assert(a >= 0 && b > 0, "bad divide args %d %d\n", a, b);
+	return (a + b - 1) // b - 1;
+}
+
+int
+div_floor_plus_one(a, b) {
+	a += b;
+	assert(a >= 0 && b > 0, "bad divide args %d %d\n", a, b);
+	return a // b;
+}
+
+bool
+clip(*clip_context c, *clip_box b)
+{
+	int	adjust_major = 0, adjust_minor = 0;
+
+	/* Clip major axis */
+	if (c->major < b->maj1) {
+		if (c->sign_major <= 0)
+			return false;
+		adjust_major = b->maj1 - c->major;
+	} else if (c->major >= b->maj2) {
+		if (c->sign_major >= 0)
+			return false;
+		adjust_major = c->major - (b->maj2-1);
+	}
+
+	/* Clip minor axis */
+	if (c->minor < b->min1) {
+		if (c->sign_minor <= 0)
+			return false;
+		adjust_minor = b->min1 - c->minor;
+	} else if (c->minor >= b->min2) {
+		if (c->sign_minor >= 0)
+			return false;
+		adjust_minor = c->minor - (b->min2-1);
+	}
+
+	/* If unclipped, we're done */
+	if (adjust_major == 0 && adjust_minor == 0)
+		return true;
+
+	/* See how much minor adjustment would happen during
+	 * a major clip. This is a bit tricky because line drawing
+	 * isn't symmetrical when the line passes exactly between
+	 * two pixels, we have to pick which one gets drawn
+	 */
+	int	adj_min;
+
+	if (!c->first)
+		adj_min = div_ceil(c->e + adjust_major * c->e1, -c->e3);
+	else
+		adj_min = div_floor_plus_one(c->e + adjust_major * c->e1, -c->e3);
+
+	/* Compare that to the minor clip and pick
+	 * the larger amount.
+	 */
+	printf ("\tinitial major %d minor %d error %d e1 %d e3 %d\n", c->major, c->minor, c->e, c->e1, c->e3);
+
+	if (adj_min < adjust_minor) {
+		printf("\tminor clip dominates %d < %d. adjust major %d -> ",
+		       adj_min, adjust_minor, adjust_major);
+		if (c->first)
+			adjust_major = div_ceil(c->e - adjust_minor * c->e3, c->e1);
+		else
+			adjust_major = div_floor_plus_one(c->e - adjust_minor * c->e3, c->e1);
+		printf("%d\n", adjust_major);
+	} else {
+		printf("\tminor clip dominates %d > %d. adjust minor %d -> ",
+		       adj_min, adjust_minor, adjust_minor);
+		adjust_minor = adj_min;
+		printf("%d\n", adjust_minor);
+	}
+
+	c->e += adjust_major * c->e1 + adjust_minor * c->e3;
+
+	c->major += c->sign_major * adjust_major;
+	c->minor += c->sign_minor * adjust_minor;
+
+	printf ("\tadjust major %d adjust minor %d e %d e1 %d e3 %e\n",
+		adjust_major, adjust_minor, c->e, c->e1, c->e3);
+
+	if (c->e >= 0)
+		printf ("error positive e %d e1 %d e3 %d\n",
+			c->e, c->e1, c->e3);
+	if (c->e < c->e3)
+		printf ("error magnitude too large e %d e1 %d e3 %d\n", c->e, c->e1, c->e3);
+
+	return true;
+}
+
+test
+line(int x1, int y1, int x2, int y2, *box b) {
+
+	int	dx = x2 - x1;
+	int	dy = y2 - y1;
+	int	signdx = sign(dx);
+	int	signdy = sign(dy);
+	int	adx = abs(dx);
+	int	ady = abs(dy);
+	int	axis;
+	int	e, e1, e2, e3;
+	int	len;
+	clip_context	clip_1, clip_2;
+	clip_box	c;
+	bool		clipped = false;
+	test		t = {
+		.x1 = x1,
+		.y1 = y1,
+		.x2 = x2,
+		.y2 = y2,
+		.b = *b,
+		.clipped = (point[...]) {},
+		.run = (point[...]) {}
+	};
+
+	if (adx >= ady) {
+		axis = X_AXIS;
+		e1 = ady << 1;
+		e2 = e1 - (adx << 1);
+		e = e1 - adx;
+		len = adx;
+
+		clip_1.major = x1;
+		clip_1.minor = y1;
+		clip_2.major = x2;
+		clip_2.minor = y2;
+		clip_1.sign_major = signdx;
+		clip_1.sign_minor = signdy;
+
+		c.maj1 = b->x1;
+		c.maj2 = b->x2;
+		c.min1 = b->y1;
+		c.min2 = b->y2;
+	} else {
+		axis = Y_AXIS;
+		e1 = adx << 1;
+		e2 = e1 - (ady << 1);
+		e = e1 - ady;
+		len = ady;
+
+		clip_1.major = y1;
+		clip_1.minor = x1;
+		clip_2.major = y2;
+		clip_2.minor = x2;
+		clip_1.sign_major = signdy;
+		clip_1.sign_minor = signdx;
+		c.maj1 = b->y1;
+		c.maj2 = b->y2;
+		c.min1 = b->x1;
+		c.min2 = b->x2;
+	}
+
+	e3 = e2 - e1;
+	e = e - e1;
+
+	clip_1.first = true;
+	clip_2.first = false;
+	clip_2.e = clip_1.e = e;
+	clip_2.e1 = clip_1.e1 = e1;
+	clip_2.e3 = clip_1.e3 = e3;
+	clip_2.sign_major = -clip_1.sign_major;
+	clip_2.sign_minor = -clip_1.sign_minor;
+
+	printf ("clip start:\n");
+	if (!clip(&clip_1, &c))
+		clipped = true;
+
+	printf("clip end:\n");
+	if (!clip(&clip_2, &c))
+		clipped = true;
+
+	int	clip_len;
+	int	clip_x, clip_y;
+	int	clip_e;
+	int	x_major, x_minor;
+	int	y_major, y_minor;
+
+	clip_len = clip_1.sign_major * (clip_2.major - clip_1.major);
+	if (clip_len < 0)
+		clipped = true;
+
+	int x, y;
+
+	if (axis == X_AXIS) {
+		x = clip_1.major;
+		y = clip_1.minor;
+		x_major = clip_1.sign_major;
+		x_minor = 0;
+		y_major = 0;
+		y_minor = clip_1.sign_minor;
+	} else {
+		x = clip_1.minor;
+		y = clip_1.major;
+		x_major = 0;
+		x_minor = clip_1.sign_minor;
+		y_major = clip_1.sign_major;
+		y_minor = 0;
+	}
+
+	clip_e = clip_1.e;
+
+	if (clipped)
+		clip_len = -1;
+
+	while (clip_len-- >= 0) {
+		t.clipped[dim(t.clipped)] = (point) { .x = x, .y = y };
+		x += x_major;
+		y += y_major;
+		clip_e += e1;
+		if (clip_e >= 0) {
+			x += x_minor;
+			y += y_minor;
+			clip_e += e3;
+		}
+	}
+
+	x = x1;
+	y = y1;
+
+	while (len-- >= 0) {
+		if (bounds.x1 <= x && x < bounds.x2 &&
+		    bounds.y1 <= y && y < bounds.y2) {
+			t.run[dim(t.run)] = (point) { .x = x, .y = y };
+		}
+		x += x_major;
+		y += y_major;
+		e += e1;
+		if (e >= 0) {
+			x += x_minor;
+			y += y_minor;
+			e += e3;
+		}
+	}
+	return t;
+}
+
+void read_events (Cairo::cairo_t cr)
+{
+	file	event = Cairo::open_event(cr);
+
+	while (!File::end(event)) {
+		string	event_line = File::fgets(event);
+		if (String::index(event_line, "delete") >= 0)
+			exit(0);
+	}
+}
+
+#for (int y = 0; y < 20; y++)
+
+void
+show(cairo_t cr, test t)
+{
+	rectangle(cr, 0, 0, 40, 40);
+	set_source_rgba(cr, 1, 1, 1, 1);
+	fill(cr);
+
+	set_source_rgba(cr, 0, 1, 0, .2);
+	set_line_width(cr, 0.1);
+	for (int x = 0; x < 40; x++) {
+		move_to(cr, 0, x);
+		line_to(cr, 40, x);
+		move_to(cr, x, 0);
+		line_to(cr, x, 40);
+	}
+	stroke(cr);
+
+	rectangle(cr, t.b.x1, t.b.y1, t.b.x2 - t.b.x1, t.b.y2 - t.b.y1);
+	set_line_width(cr, 0.1);
+	set_source_rgba(cr, 0, 0, 0, 1);
+	stroke(cr);
+
+	move_to(cr, t.x1+.5, t.y1+.5);
+	line_to(cr, t.x2+.5, t.y2+.5);
+	move_to(cr, t.x2, t.y2);
+	line_to(cr, t.x2+1, t.y2+1);
+	move_to(cr, t.x2+1, t.y2);
+	line_to(cr, t.x2, t.y2+1);
+	stroke(cr);
+
+	void pixels(point[] pt) {
+		for (int i = 0; i < dim(pt); i++) {
+			rectangle(cr, pt[i].x, pt[i].y, 1, 1);
+		}
+		fill(cr);
+	}
+
+	set_source_rgba(cr, 1, 0, 0, .5);
+	pixels(t.clipped);
+
+	set_source_rgba(cr, 0, 0, 1, .5);
+	pixels(t.run);
+}
+
+bool
+compare(test t)
+{
+	if (dim(t.clipped) != dim(t.run))
+		return false;
+
+	for (int i = 0; i < dim(t.clipped); i++)
+		if (t.clipped[i] != t.run[i])
+			return false;
+	return true;
+}
+
+void
+doit(int i)
+{
+	int	n;
+	*box	b = &bounds;
+
+	cairo_t cr = new(800, 800);
+
+	scale(cr, 20, 20);
+
+	for (;;) {
+		PRNG::srandom(i);
+		int	x1 = PRNG::randint(40);
+		int	x2 = PRNG::randint(40);
+		int	y1 = PRNG::randint(40);
+		int	y2 = PRNG::randint(40);
+
+		test t = line (x1, y1, x2, y2, &bounds);
+		show(cr, t);
+		if (!compare(t)) {
+			printf("line %d -- %d x %d - %d x %d\n", i, x1, y1, x2, y2);
+			gets();
+		}
+		i++;
+	}
+
+	read_events(cr);
+}
+
+int i = 0;
+if (dim(argv) > 1)
+	i = atoi(argv[1]);
+
+doit(i);

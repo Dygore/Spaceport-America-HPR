@@ -1,0 +1,35 @@
+.\"
+.\" Copyright © 2018 Bdale Garbee <bdale@gag.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-RESET-LPC 1 "ao-reset-lpc" ""
+.SH NAME
+ao-reset-lpc \- reset an LPC11U14-based AltOS device using openocd
+.SH SYNOPSIS
+.B "ao-reset-lpc"
+.SH DESCRIPTION
+.I ao-reset-lpc
+resets the target device.
+.SH USAGE
+.I ao-reset-lpc
+is a simple script that passes the correct arguments to openocd to
+reset the target device via a connected STlink debugging dongle.
+.SH "SEE ALSO"
+openocd(1)
+.SH AUTHOR
+Bdale Garbee
+

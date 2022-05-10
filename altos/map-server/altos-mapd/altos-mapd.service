@@ -1,0 +1,14 @@
+[Unit]
+Description=AltOS Map Cache
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=altos-mapd
+Restart=always
+EnvironmentFile=/etc/default/altos-mapd-default
+ExecStart=/usr/bin/altos-mapd --key $MAPKEY --mapdir $MAPDIR --launch-sites $LAUNCHSITES --max-zoom $MAXZOOM
+
+[Install]
+WantedBy=multi-user.target

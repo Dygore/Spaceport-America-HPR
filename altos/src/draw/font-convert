@@ -1,0 +1,150 @@
+#!/usr/bin/nickle
+
+typedef struct {
+	int[]	bytes;
+	int	width;
+	int	height;
+	int	encoding;
+	int	location;
+} glyph_t;
+
+typedef struct {
+	glyph_t[...]	glyphs;
+	int		default_char;
+	int		ascent;
+} font_t;
+
+glyph_t
+read_glyph(file f)
+{
+	glyph_t	glyph = { .encoding = -1, .bytes = (int[...]){}, .width = 0 };
+
+	while (!File::end(f)) {
+		string	l = fgets(f);
+
+		string[*] tokens = String::split(l, " ");
+		if (dim(tokens) == 0)
+			continue;
+
+		switch (tokens[0]) {
+		case "ENCODING":
+			glyph.encoding = atoi(tokens[1]);
+			break;
+		case "DWIDTH":
+			glyph.width = atoi(tokens[1]);
+			break;
+		case "BBX":
+			glyph.height = atoi(tokens[2]);
+			break;
+		case "ENDCHAR":
+			return glyph;
+		case "BITMAP":
+			while (!File::end(f)) {
+				string l = fgets(f);
+				if (l == "ENDCHAR")
+					return glyph;
+				glyph.bytes[dim(glyph.bytes)] = atoi(l, 16);
+			}
+			break;
+		}
+	}
+	return glyph;
+}
+
+font_t read_font(file f) {
+	font_t	font = { .glyphs = {}, .default_char = -1 };
+	bool in_head = true;
+
+	while (in_head && !File::end(f)) {
+		string l = File::fgets(f);
+
+		string[*] tokens = String::split(l, " ");
+		switch (tokens[0]) {
+		case "DEFAULT_CHAR":
+			font.default_char = atoi(tokens[1]);
+			break;
+		case "FONT_ASCENT":
+			font.ascent = atoi(tokens[1]);
+			break;
+		case "CHARS":
+			in_head = false;
+			break;
+		}
+	}
+	while (!File::end(f)) {
+		glyph_t	glyph = read_glyph(f);
+		if (glyph.encoding == -1)
+			break;
+		font.glyphs[dim(font.glyphs)] = glyph;
+	}
+	return font;
+}
+
+int
+flip_byte(int x)
+{
+	int	dest = 0;
+
+	for (int i = 0; i < 8; i++)
+		dest |= ((x >> (7 - i)) & 1) << i;
+	return dest;
+}
+
+void print_font(font_t font) {
+	int	width = font.glyphs[0].width;
+	int	height = font.glyphs[0].height;
+	int[256] pos = { -1 ... };
+	int[...] bytes;
+
+	if (false) {
+	for (int i = 1; i < dim(font.glyphs); i++) {
+		if (font.glyphs[i].width != width ||
+		   font.glyphs[i].height != height)
+		{
+			File::fprintf(stderr, "font not constant size, glyph %d is %dx%d\n",
+				      font.glyphs[i].encoding, font.glyphs[i].width, font.glyphs[i].height);
+			exit(1);
+		}
+	}
+	}
+
+	if (font.default_char == -1)
+		font.default_char = font.glyphs[0].encoding;
+
+	/* build byte array */
+	for (int i = 0; i < dim(font.glyphs); i++) {
+		pos[font.glyphs[i].encoding] = dim(bytes);
+		for (int b = 0; b < dim(font.glyphs[i].bytes); b++)
+			bytes[dim(bytes)] = font.glyphs[i].bytes[b];
+	}
+
+	/* Fill in default glyph */
+	for (int i = 0; i < dim(pos); i++)
+		if (pos[i] == -1)
+			pos[i] = pos[font.default_char];
+
+	printf("static const uint8_t glyph_bytes[%d] = {", dim(bytes));
+	for (int b = 0; b < dim(bytes); b++) {
+		if ((b & 15) == 0)
+			printf("\n\t");
+		printf("0x%02x, ", flip_byte(bytes[b]));
+	}
+	printf("\n};\n\n");
+
+	printf("static const uint16_t glyph_pos[%d] = {", dim(pos));
+	for (int i = 0; i < dim(pos); i++) {
+		if ((i & 7) == 0)
+			printf("\n\t");
+		printf("%4d, ", pos[i]);
+	}
+	printf("\n};\n\n");
+
+	printf("#define GLYPH_WIDTH %d\n", width);
+	printf("#define GLYPH_HEIGHT %d\n", height);
+	printf("#define GLYPH_ASCENT %d\n", font.ascent);
+}
+
+twixt (file f = File::open(argv[1], "r"); File::close(f)) {
+       font_t font = read_font(f);
+       print_font(font);
+}

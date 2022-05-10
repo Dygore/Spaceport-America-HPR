@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=TeleGPS
+GenericName=TeleGPS monitor, download and analysis
+Comment=View and log data from TeleGPS tracking devices
+Icon=%icondir%/altusmetrum-telegps.svg
+Exec=%bindir%/telegps %F
+Terminal=false
+MimeType=application/vnd.altusmetrum.telemetry;application/vnd.altusmetrum.eeprom
+Categories=Education;Electronics;Science;
+Keywords=Telemetry;GPS

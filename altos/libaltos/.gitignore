@@ -1,0 +1,17 @@
+*.so
+*.lo
+*.la
+*.java
+*.class
+*.dll
+.libs/
+classlibaltos.stamp
+libaltos_wrap.c
+libaltosJNI
+cjnitest
+cjnitest32
+cjnitest64
+cjnitest_*
+btletest
+libaltos.swig
+swig_bindings/

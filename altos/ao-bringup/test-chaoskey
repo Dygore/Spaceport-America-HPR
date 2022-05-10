@@ -1,0 +1,97 @@
+#!/bin/bash
+snum="unknown"
+case "$#" in
+    1)
+	case "$1" in
+	    "-?"|"--help")
+		echo "Usage: $0 [serial]"
+		exit 0
+		;;
+	esac
+	snum="$1"
+	serial="--serial $1"
+	;;
+    0)
+	snum=`sudo dmesg -t | awk '/usb.*Product:/ { ck = index($0, "ChaosKey"); }
+		     /usb.*SerialNumber:/ { if (ck) print $4; }' | tail -1`
+
+	case "$snum" in
+	    "")
+		serial=""
+		;;
+	    *)
+		serial="--serial $snum"
+		;;
+	esac
+	;;
+    *)
+	echo "Usage: $0 [serial]"
+	exit 1
+	;;
+esac
+
+echo -e '\e[34mTesting ChaosKey' $snum '\e[39m'
+
+tests="0:100 1:100 2:100 3:100 12:10 13:100 15:10000 16:250 202:1000 203:100 204:500 206:20 207:1000:32 209:1000"
+
+PASS=0
+FAIL=0
+WEAK=0
+chaosread $serial --infinite --bytes | for test in $tests done; do
+    case $test in
+	*:*:*)
+	    dnum=`echo $test | sed 's/:.*$//'`
+	    tnum=`echo $test | sed 's/^[^:]*://'`
+	    tnum=`echo $test | sed 's/^[^:]*://' | sed 's/:.*$//'`
+	    nnum=`echo $test | sed 's/^.*://'`
+	    opts="-d $dnum -t $tnum -n $nnum"
+	    ;;
+	*:*)
+	    dnum=`echo $test | sed 's/:.*$//'`
+	    tnum=`echo $test | sed 's/^.*://'`
+	    opts="-d $dnum -t $tnum"
+	    ;;
+	*)
+	    dnum=$test
+	    opts="-d $dnum"
+	    ;;
+    esac
+    case $dnum in
+    done)
+	echo DONE
+	;;
+    *)
+	echo TEST $dnum
+	dieharder -g 200 $opts
+	;;
+    esac
+done | while read result; do
+    case "$result" in
+	TEST*)
+	    testnum=`echo $result | sed 's/TEST //'`
+	    ;;
+	*PASSED*)
+	    PASS=`expr $PASS + 1`
+	    ;;
+	*WEAK*)
+	    WEAK=`expr $WEAK + 1`
+	    ;;
+	*FAILED*)
+	    echo test $testnum failed
+	    FAIL=`expr $FAIL + 1`
+	    ;;
+	DONE)
+	    echo pass $PASS weak $WEAK fail $FAIL
+	    case $PASS:$FAIL in
+		[1-9]*:0)
+		    echo -e '\e[32m'ChaosKey $snum is ready to ship'\e[39m'
+		    exit 0
+		    ;;
+		*)
+		    echo -e '\e[31m'ChaosKey $snum failed'\e[39m'
+		    exit 1
+		    ;;
+	    esac
+	    ;;
+    esac
+done

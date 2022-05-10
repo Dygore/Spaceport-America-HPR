@@ -1,0 +1,76 @@
+#!/bin/sh
+
+PRODUCT=EasyMega
+
+if [ -x ../ao-tools/ao-flash/ao-flash-stm ]; then
+	STMLOAD=../ao-tools/ao-flash/ao-flash-stm
+else
+	echo "Can't find ao-flash-stm!  Aborting."
+	exit 1
+fi
+
+if [ -x ../ao-tools/ao-usbload/ao-usbload ]; then
+	USBLOAD=../ao-tools/ao-usbload/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+VERSION=1.0
+REPO=~/altusmetrumllc/Binaries
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2014 by Bdale Garbee.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION"
+echo "\t\twith USB cable attached"
+echo "\t\twith ST-Link-V2 cabled to debug header"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+echo $STMLOAD
+
+$STMLOAD $REPO/loaders/easymega-v$VERSION*.elf || exit 1
+
+sleep 2
+
+$USBLOAD --serial=$SERIAL $REPO/easymega-v$VERSION*.elf || exit 1
+
+sleep 2
+
+dev=`../ao-tools/ao-list/ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "$PRODUCT found on $dev"
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+
+../ao-tools/ao-cal-accel/ao-cal-accel $dev || exit 1
+
+echo 'E 1' > $dev
+
+./test-easymega-v1.0
+
+exit $?

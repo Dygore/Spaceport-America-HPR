@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	 Copyright © 2012-2013 Mike Beattie <mike@ethernal.org>
+
+	 This program is free software; you can redistribute it and/or modify
+	 it under the terms of the GNU General Public License as published by
+	 the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+
+	 This program is distributed in the hope that it will be useful, but
+	 WITHOUT ANY WARRANTY; without even the implied warranty of
+	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	 General Public License for more details.
+
+	 You should have received a copy of the GNU General Public License along
+	 with this program; if not, write to the Free Software Foundation, Inc.,
+	 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+-->
+<resources>
+
+	<string name="app_name">AltosDroid</string>
+
+	<!-- AltosDroid -->
+	<string name="bt_not_enabled">Bluetooth was not enabled.</string>
+	<string name="title_connecting">connecting…</string>
+	<string name="title_connected_to">connected</string>
+	<string name="title_not_connected">not connected</string>
+
+	<!-- Options Menu -->
+	<string name="connect_device">Connect a device</string>
+	<string name="disconnect_device">Disconnect device</string>
+	<string name="quit">Quit</string>
+	<string name="setup">Setup</string>
+	<string name="select_freq">Select radio frequency</string>
+	<string name="select_rate">Select data rate</string>
+	<string name="change_units">Change units</string>
+	<string name="preload_maps">Load Maps</string>
+	<string name="select_tracker">Select Tracker</string>
+	<string name="delete_track">Delete Track</string>
+	<string name="map_type">Map Type</string>
+	<string name="map_source">Map Source</string>
+
+	<!-- MapTypeActivity -->
+	<!-- <string name="map_type">Map Type</string> -->
+
+	<!-- DeviceListActivity -->
+	<string name="scanning">Scanning…</string>
+	<string name="select_device">Select device</string>
+	<string name="none_paired">No devices have been paired</string>
+	<string name="none_found">No devices found</string>
+	<string name="title_paired_devices">Paired Devices</string>
+	<string name="title_other_devices">Other Available Devices</string>
+	<string name="button_scan">Scan for devices</string>
+
+	<!-- TrackerListActivity -->
+	<string name="freq_label">Freq</string>
+
+	<!-- Service -->
+	<string name="telemetry_service_label">AltosDroid Telemetry Service</string>
+	<string name="telemetry_service_started">Telemetry Service Started</string>
+	<string name="telemetry_service_stopped">Telemetry Service Stopped</string>
+
+	<!-- UI fields -->
+	<!-- Header -->
+	<string name="callsign_label">Call</string>
+	<string name="serial_label">Serial</string>
+	<string name="flight_label">Flight</string>
+	<string name="state_label">State</string>
+	<string name="rssi_label">RSSI</string>
+	<string name="age_label">Age</string>
+
+	<!-- Tab fields -->
+	<string name="height_label">Height</string>
+	<string name="altitude_label">Altitude</string>
+	<string name="speed_label">Speed</string>
+	<string name="accel_label">Acceleration</string>
+	<string name="tilt_label">Tilt</string>
+	<string name="bearing_label">Bearing</string>
+	<string name="direction_label">Direction</string>
+	<string name="elevation_label">Elevation</string>
+	<string name="range_label">Range</string>
+	<string name="distance_label">Distance</string>
+	<string name="gnd_distance_label">Ground Distance</string>
+	<string name="max_height_label">Max Height</string>
+	<string name="max_altitude_label">Max Altitude</string>
+	<string name="max_speed_label">Max Speed</string>
+	<string name="max_accel_label">Max Accel</string>
+	<string name="battery_voltage_label">Battery</string>
+	<string name="receiver_voltage_label">Receiver Battery</string>
+	<string name="apogee_voltage_label">Apogee Igniter</string>
+	<string name="main_voltage_label">Main Igniter</string>
+	<string name="ignite_a_voltage_label">Igniter A</string>
+	<string name="ignite_b_voltage_label">Igniter B</string>
+	<string name="ignite_c_voltage_label">Igniter C</string>
+	<string name="ignite_d_voltage_label">Igniter D</string>
+	<string name="logging_label">Data Logging</string>
+	<string name="gps_locked_label">GPS Locked</string>
+	<string name="gps_ready_label">GPS Ready</string>
+	<string name="latitude_label">Latitude</string>
+	<string name="longitude_label">Longitude</string>
+	<string name="target_pos_label">Tar</string>
+	<string name="receiver_pos_label">Me</string>
+	<string name="target_latitude_label">Tar Lat</string>
+	<string name="target_longitude_label">Tar Lon</string>
+	<string name="receiver_latitude_label">My Lat</string>
+	<string name="receiver_longitude_label">My Lon</string>
+	<string name="receiver_altitude_label">My Alt</string>
+
+	<!-- Map preload -->
+	<string name="preload_site_label">Known Launch Sites</string>
+	<string name="preload_latitude_label">Latitude</string>
+	<string name="preload_longitude_label">Longitude</string>
+
+	<string name="preload_types">Map Types</string>
+	<string name="preload_hybrid">Hybrid</string>
+	<string name="preload_satellite">Satellite</string>
+	<string name="preload_roadmap">Roadmap</string>
+	<string name="preload_terrain">Terrain</string>
+	<string name="preload_min_zoom">Minimum Zoom</string>
+	<string name="preload_max_zoom">Maximum Zoom</string>
+	<string name="preload_radius">Radius</string>
+	
+	<string name="preload_load">Load Map</string>
+
+	<!-- Idle mode -->
+	<string name="idle_mode">Idle Mode</string>
+	<string name="set_callsign_label">Callsign: </string>
+	<string name="connect_idle">Monitor</string>
+	<string name="disconnect_idle">Disconnect</string>
+	<string name="reboot_idle">Reboot</string>
+	<string name="igniters_idle">Fire Igniters</string>
+
+	<!-- igniters -->
+	<string name="igniters">Igniters</string>
+	<string name="igniter_arm">Arm</string>
+	<string name="igniter_armed">Armed</string>
+	<string name="igniter_fire">Fire</string>
+	
+	<!-- setup -->
+	<string name="telemetry_rate">Telemetry Rate</string>
+	<string name="set_units">Units</string>
+	<!-- <string name="map_type">Map Type</string> -->
+	<!-- <string name="map_source">Map Source</string> -->
+	<!-- <string name="preload_maps">Preload Maps</string> -->
+	<string name="font_size">Text Size</string>
+	<string name="manage_frequencies">Manage Frequencies</string>
+	<string name="done">OK</string>
+	
+	<!-- manage frequencies -->
+	<string name="set">Set</string>
+	<string name="mhz">MHz</string>
+	<string name="remove">Remove</string>
+	<!-- <string name="done">OK</string> -->
+	<string name="frequency">Frequency</string>
+	<string name="description">Description</string>
+</resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  Copyright © 2015 Keith Packard <keithp@keithp.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/connect_scan"
+          android:icon="@android:drawable/ic_menu_search"
+          android:title="@string/connect_device" />
+    <item android:id="@+id/disconnect"
+	  android:icon="@android:drawable/ic_notification_clear_all"
+	  android:title="@string/disconnect_device" />
+    <item android:id="@+id/select_freq"
+          android:icon="@android:drawable/ic_menu_preferences"
+          android:title="@string/select_freq" />
+
+    <item android:id="@+id/select_tracker"
+	  android:icon="@android:drawable/ic_menu_view"
+	  android:title="@string/select_tracker"/>
+    <item android:id="@+id/delete_track"
+	  android:icon="@android:drawable/ic_notification_clear_all"
+	  android:title="@string/delete_track"/>
+
+    <item android:id="@+id/setup"
+          android:icon="@android:drawable/ic_menu_preferences"
+          android:title="@string/setup" />
+    <item android:id="@+id/idle_mode"
+          android:icon="@android:drawable/ic_menu_preferences"
+          android:title="@string/idle_mode" />
+
+    <item android:id="@+id/quit"
+          android:icon="@android:drawable/ic_menu_close_clear_cancel"
+          android:title="@string/quit" />
+</menu>

@@ -1,0 +1,35 @@
+digraph map_loading {
+	edge [arrowsize=0.5; style="setlinewidth(2)"]
+	node [style=filled; fontcolor=white; color=invis; shape=box; arrowsize=0.5; fontname="DejaVu Sans,sans-serif"; fontsize=12; height=0.2;];
+	edge [decorate=true; fontname="DejaVu Sans,sans-serif"; fontsize=8];
+	graph [fontname="DejaVu Sans,sans-serif"; fontsize=15; ]
+	rankdir="TB";
+	ranksep=0.5;
+	nodesep=0.5;
+	color=invis;
+	fillcolor="#c0c0c0";
+	fontcolor="white";
+
+	app -> apache [label="AltOS Map URI"]
+	apache -> app [label="Google Map tile"]
+
+	apache -> cgi_script [label="AltOS Map URI"]
+	cgi_script -> cache_manager [label="AltOS Tile Request"]
+
+	cgi_script -> apache [label="Google Map tile"]
+
+	cache_manager -> cgi_script [label="AltOS Tile Reply"]
+
+	cache_manager -> disk_files [label="AltOS tile files" dir="both"]
+	cache_manager -> google_maps [label="Google Map URI"]
+
+	google_maps -> cache_manager [label="Google Map tile"]
+
+	app [color="#885931" label="Application"]
+	apache [color="#d12127" label="Apache Web Server"]
+	cgi_script [color="#551a8b" label="AltOS Map CGI Script"]
+	cache_manager [color="#c75b1c" label="AltOS Map Cache Manager"]
+	disk_files [color="#4f81bd" label="File System"]
+	google_maps [color="#4cbb44" label="Google Maps"]
+}
+	

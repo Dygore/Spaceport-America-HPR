@@ -1,0 +1,49 @@
+.\"
+.\" Copyright © 2009 Keith Packard <keithp@keithp.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-EEPROM 1 "ao-eeprom" ""
+.SH NAME
+ao-eeprom \- Analyze an eeprom log
+.SH SYNOPSIS
+.B "ao-eeprom"
+[\--raw]
+[\--csum]
+[\--verbose]
+[\--len <record-len>]
+{flight.eeprom} ...
+.SH OPTIONS
+.TP
+\-r | --raw
+This option makes ao-eeprom dump the raw bytes of each
+log record in hex format.
+.TP
+\-c | --csum
+This option makes ao-eeprom dump records that have checksum errors. By default,
+ao-eeprom skips such records.
+\-v | --verbose
+This option makes ao-eeprom report when records are skipped due to
+checksum errors.
+\-l <record-len> | --len <record-len
+Specify the eeprom record length rather than letting ao-eeprom
+automatically determine it based on the file contents.
+.SH DESCRIPTION
+.I ao-eeprom
+reads the specified eeprom log and display the contents of each
+record.
+.SH AUTHOR
+Keith Packard

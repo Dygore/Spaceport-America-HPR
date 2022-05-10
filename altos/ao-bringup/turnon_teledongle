@@ -1,0 +1,106 @@
+#!/bin/sh
+
+if [ -x ../ao-tools/ao-flash/ao-flash-lpc ]; then
+	FLASH_LPC=../ao-tools/ao-flash/ao-flash-lpc
+elif [ -x /usr/bin/ao-flash-lpc ]; then
+	FLASH_LPC=/usr/bin/ao-flash-lpc
+else
+	echo "Can't find ao-flash-lpc!  Aborting."
+	exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+PRODUCT=teledongle
+PRODUCT_NAME=TeleDongle
+VERSION=3.0
+
+echo "$PRODUCT_NAME v$VERSION Turn-On and Calibration Program"
+echo "Copyright © 2015 by Bdale Garbee.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT_NAME v$VERSION powered from USB"
+echo "\t\twith ST-Link-V2 cabled to debug header"
+echo "\t\twith coax from UHF to frequency counter"
+echo
+
+case $# in
+    1)
+	SERIAL="$1"
+	echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+	;;
+    0)
+	echo -n "$PRODUCT-$VERSION serial number: "
+	read SERIAL
+	;;
+    *)
+	echo "Usage: $0 <serial-number>" 1>&2
+	exit 1;
+	;;
+esac
+
+BINARIES=$HOME/altusmetrumllc/Binaries
+
+LOADER="$BINARIES/loaders/$PRODUCT-v$VERSION-"*.elf
+ALTOS="$BINARIES/$PRODUCT-v$VERSION"*.elf
+
+$FLASH_LPC $LOADER || exit 1
+
+sleep 2
+
+$USBLOAD --serial=$SERIAL $ALTOS || exit 1
+
+sleep 5
+
+dev=`ao-list | awk '/TeleDongle-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "TeleDongle found on $dev"
+	;;
+*)
+	echo 'No TeleDongle-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+echo 'E 0' > $dev
+
+CALFILE=cal-$SERIAL.txt
+
+../ao-tools/ao-cal-freq/ao-cal-freq --verbose --nosave --output=$CALFILE --tty=$dev
+
+case $? in
+    0)
+	;;
+    *)
+	echo "Frequency calibration failed"
+	exit 1
+	;;
+esac
+
+CAL_VALUE=`cat $CALFILE`
+
+case "$CAL_VALUE" in
+    [1-9]*)
+    ;;
+    *)
+	echo "Invalid calibration value: $CAL_VALUE"
+	exit 1
+	;;
+esac
+
+echo $SERIAL","$CAL_VALUE >> cal_values
+
+echo "Reflashing with calibration: $CAL_VALUE"
+
+$USBLOAD --cal=$CAL_VALUE --tty=$dev $ALTOS || exit 1
+
+echo "$PRODUCT_NAME-v$VERSION $SERIAL is ready to ship"
+
+exit $?

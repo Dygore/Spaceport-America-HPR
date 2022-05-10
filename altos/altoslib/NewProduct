@@ -1,0 +1,52 @@
+When adding a new product to the java code, there are a number of
+places that might need adjustment:
+
+altoslib/
+
+ 1. AltosLib.java
+
+	Declare new log format
+	Declare new USB ids
+	Declare new Product name
+	Add item to product_name function
+
+ 2. AltosIdleFetch.java
+
+	Declare any new sensors, create new sensor class
+	Create new sensor class for ADC values
+	Add new AltosIdler entry to idlers array
+
+ 3. AltosEepromRecordSet.java
+
+	Map new log format to new log record decode class
+
+ 4. AltosIMU.java
+
+	Map new imu_type (which includes orientation) correctly
+
+ 5. AltosConfigData.java
+
+	Adjust invert_accel_value for new log format or product name
+	Adjust use_flash_for_config as needed
+	Adjust various accel_inverted functions
+	Adjust adxl375_axis
+
+ 6. AltosTelemetry.java
+
+	Define new telemetry packet types
+
+
+ 7. AltosTelemetryStandard.java
+
+	Map telemetry packet type to new decoder class
+
+ 8. AltosTelemetry*.java
+
+	Adjust existing telemetry decoders for new sensors
+
+
+altosuilib/
+
+ 1. AltosUSBDevice.java
+
+	Add new product ID as appropriate to matchProduct

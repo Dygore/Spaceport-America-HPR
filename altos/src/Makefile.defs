@@ -1,0 +1,56 @@
+include $(TOPDIR)/Makedefs
+
+AO_VPATH=$(TOPDIR)/product:$(TOPDIR)/drivers:$(TOPDIR)/kernel:$(TOPDIR)/util:$(TOPDIR)/kalman:$(TOPDIR)/aes:$(TOPDIR)/math:$(TOPDIR)/draw:$(TOPDIR)
+vpath make-altitude $(TOPDIR)/util
+vpath make-kalman $(TOPDIR)/util
+vpath kalman.5c $(TOPDIR)/kalman
+vpath kalman_filter.5c $(TOPDIR)/kalman
+vpath load_csv.5c $(TOPDIR)/kalman
+vpath matrix.5c $(TOPDIR)/kalman
+vpath ao-make-product.5c $(TOPDIR)/util
+
+WARN_FLAGS=-Wall -Wextra -Werror -Wcast-align \
+	-Wpointer-arith \
+	-Wstrict-prototypes \
+	-Wmissing-prototypes \
+	-Wmissing-declarations \
+	-Wnested-externs \
+	-Wshadow \
+	-Warray-bounds=2 \
+	-Wconversion
+
+OPT=-Os -Wl,-Map=$(PROGNAME)-$(VERSION).map
+
+PICOLIBC_CFLAGS= \
+	-specs=picolibc.specs \
+	$(PICOLIBC_PRINTF_CFLAGS)
+
+AO_CFLAGS=\
+	-std=gnu99 \
+	-I. -I$(TOPDIR) -I$(TOPDIR)/kernel -I$(TOPDIR)/drivers \
+	-I$(TOPDIR)/math -I$(TOPDIR)/draw -I$(TOPDIR)/product $(WARN_FLAGS) $(OPT) -g
+
+NICKLE=nickle
+ELFTOHEX=$(TOPDIR)/../ao-tools/ao-elftohex/ao-elftohex
+
+.SUFFIXES: .elf .ihx
+
+.elf.ihx:
+	$(ELFTOHEX) --output=$@ $*.elf
+
+V=0
+# The user has explicitly enabled quiet compilation.
+ifeq ($(V),0)
+quiet = @printf "  $1 $2 $@\n"; $($1)
+endif
+# Otherwise, print the full command line.
+quiet ?= $($1)
+
+.c.o:
+	$(call quiet,CC) -c $(CFLAGS) -o $@ $<
+
+.DEFAULT_GOAL=all
+
+ao_product.h: ao-make-product.5c $(TOPDIR)/Makedefs
+	$(call quiet,NICKLE,$<) $< -m altusmetrum.org -i $(IDPRODUCT) -p $(PRODUCT) -v $(VERSION) > $@
+

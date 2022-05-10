@@ -1,0 +1,47 @@
+.\"
+.\" Copyright © 2013 Keith Packard <keithp@keithp.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-LOAD 1 "ao-makebin" ""
+.SH NAME
+ao-makebin \- construct raw binary file or DFU image from collection of ELF files
+.SH SYNOPSIS
+.B "ao-makebin"
+[\--base=\fIbase-address\fP]
+[\--output=\fIoutput.bin\fP]
+[\--dfu]
+[\--verbose]
+\fIinput.elf ...\fP
+.SH DESCRIPTION
+.I ao-makebin
+reads the specified .elf files and writes out a raw binary flash image
+.SH OPTIONS
+.TP
+\--base=\fIbase-address\fP
+This specifies the target address for the first byte of the file (default is 0)
+.TP
+\--output=\fIoutput.bin\fP
+This specifies the output file (default is stdout)
+.TP
+\--dfu
+Creates a DFU file (as documented by ST's UM0391 user manual) instead
+of a raw binary file.
+.TP
+\--verbose
+Dumps some debug information.
+.SH AUTHOR
+Keith Packard

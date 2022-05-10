@@ -1,0 +1,29 @@
+#!/bin/sh
+
+case $# in
+1)
+	file="$1"
+	title="$1"
+	;;
+2)
+	file="$1"
+	title="$2"
+	;;
+*)
+	echo "Usage: $0 <data-file> <title>"
+	exit 1
+esac
+
+gnuplot -persist << EOF
+set ylabel "distance (m)"
+set y2label "angle (d)"
+set xlabel "time (s)"
+set xtics border out nomirror
+set ytics border out nomirror
+set y2tics border out nomirror
+set title "$title"
+plot "$file" using 1:5 with lines axes x1y1 title "height",\
+"$file" using 1:7 with lines axes x1y2 title "angle",\
+"$file" using 1:13 with lines axes x1y2 title "gps angle",\
+"$file" using 1:15 with lines axes x1y2 title "sats"
+EOF

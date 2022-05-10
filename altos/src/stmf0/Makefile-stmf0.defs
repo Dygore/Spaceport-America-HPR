@@ -1,0 +1,18 @@
+ifndef TOPDIR
+TOPDIR=..
+endif
+
+# Disable floating-point support in printf to save space
+
+PICOLIBC_PRINTF_CFLAGS = -DPICOLIBC_INTEGER_PRINTF_SCANF
+
+include $(TOPDIR)/Makefile.defs
+
+vpath % $(TOPDIR)/stmf0:$(AO_VPATH)
+
+CC=$(ARM_CC)
+
+STMF0_CFLAGS=-mlittle-endian -mcpu=cortex-m0 -mthumb\
+	-I$(TOPDIR)/stmf0 $(AO_CFLAGS) $(PICOLIBC_CFLAGS)
+
+LIBS=-lm

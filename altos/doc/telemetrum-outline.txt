@@ -1,0 +1,12 @@
+:notitle:
+:doctype: article
+
+== TeleMetrum Outline and Hole Pattern
+	This image, when printed, provides a precise template for the
+	mounting holes in TeleMetrum. TeleMetrum has overall dimensions of
+	1.000 x 2.750 inches, and the mounting holes are 0.125 inches from
+	three of the board edges, and 0.375 inches from the screw terminal 
+	end.  That means they are in a rectangle measuring 0.750 x 2.250
+	inches, sized for use with 4-40 or M3 screws.
+
+	image::telemetrum.svg[align="center"]

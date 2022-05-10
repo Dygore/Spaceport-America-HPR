@@ -1,0 +1,47 @@
+apply plugin: 'com.android.application'
+
+def keystorePropertiesFile = file(System.properties['user.home'] + "/altusmetrumllc/android_keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+    signingConfigs {
+        release {
+            storeFile file(System.properties['user.home'] + "/altusmetrumllc/android_keystore.jks")
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "org.altusmetrum.AltosDroid"
+        minSdkVersion 21
+        targetSdkVersion 30
+        versionCode @ANDROID_VERSION@
+        versionName "@VERSION@"
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.core:core:1.2.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}

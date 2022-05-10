@@ -1,0 +1,55 @@
+.\"
+.\" Copyright © 2009 Keith Packard <keithp@keithp.com>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program; if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+.\"
+.\"
+.TH AO-LOAD 1 "ao-test-gps" ""
+.SH NAME
+ao-test-baro \- test AltOS tracker GPS receiver
+.SH SYNOPSIS
+.B "ao-test-gps"
+[\-T \fItty-device\fP]
+[\--tty \fItty-device\fP]
+[\-D \fIaltos-device\fP]
+[\--device \fIaltos-device\fP]
+\fIgps-name...\fP
+.SH DESCRIPTION
+.I ao-test-gps
+Waits for the GPS receiver to report lock.
+.SH OPTIONS
+.TP
+\-T tty-device | --tty tty-device
+This selects which tty device the debugger uses to communicate with
+the target device.
+.TP
+\-D AltOS-device | --device AltOS-device
+Search for a connected device. This requires an argument of one of the
+following forms:
+.IP
+TeleMega:2
+.br
+TeleMega
+.br
+2
+.IP
+Leaving out the product name will cause the tool to select a suitable
+product, leaving out the serial number will cause the tool to match
+one of the available devices.
+.SH USAGE
+.I ao-test-gps
+opens the target device and waits for it to report GPS lock.
+.SH AUTHOR
+Keith Packard

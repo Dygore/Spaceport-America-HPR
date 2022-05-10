@@ -1,0 +1,29 @@
+# To create linux icons and file associations
+
+1) Create mime type and install
+
+	http://www.freedesktop.org/wiki/Specifications/AddingMIMETutor/
+
+	# xdg-mime install --mode system org-altusmetrum-mimetypes.xml
+	# update-mime-database /usr/local/share/mime
+
+	On debian, 
+
+2) Create icons and install
+
+	For mime type	application/vnd.altusmetrum.telemetry
+	icon name	application-vnd.altusmetrum.telemetry.svg
+
+	All mime icons go in
+
+	/usr/share/icons/hicolor/scalable/mimetypes
+
+	Update the icon database
+
+	# update-icon-caches /usr/share/icons/hicolor
+
+3) Create .desktop file and install
+
+	# xdg-desktop-menu install --mode system altusmetrum-altosui.desktop
+
+	# update-desktop-database

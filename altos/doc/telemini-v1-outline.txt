@@ -1,0 +1,12 @@
+:notitle:
+:doctype: article
+
+== TeleMini v1 Outline and Hole Pattern
+
+	This image, when printed, provides a precise template for the
+	mounting holes in TeleMini. TeleMini v1 has overall dimensions of
+	0.500 x 1.500 inches, and the mounting holes are sized for use with 
+	2-56 or M2 screws. The holes are located 0.100 inches from the edge 
+	of the board in both directions, meaning they are 0.300 inches apart.
+
+	image::telemini-v1.svg[align="center"]

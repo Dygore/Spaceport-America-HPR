@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=MicroPeak
+GenericName=MicroPeak Download and Analysis
+Comment=View and log data from MicroPeak altimeters
+Icon=%icondir%/altusmetrum-micropeak.svg
+Exec=%bindir%/micropeak %F
+Terminal=false
+MimeType=application/vnd.altusmetrum.micropeak
+Categories=Education;Electronics;Science;
+Keywords=Rocket;Altimeter

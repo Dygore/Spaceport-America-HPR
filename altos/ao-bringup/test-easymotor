@@ -1,0 +1,40 @@
+#!/bin/sh
+
+VERSION=2
+PRODUCT=EasyMotor
+BASE=`echo $PRODUCT | tr 'A-Z' 'a-z'`
+
+echo "$PRODUCT-v$VERSION Test Program"
+echo "Copyright 2021 by Bdale Garbee.  Released under GPL v3"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION powered from USB"
+echo
+
+ret=1
+ao-list | while read product serial dev; do
+    case "$product" in
+	"$PRODUCT-v$VERSION")
+
+	    echo "Testing $product $serial $dev"
+	    echo ""
+
+	    FLASHSIZE=8388608
+
+	    echo "Testing flash"
+	    ../ao-tools/ao-test-flash/ao-test-flash --tty="$dev" "$FLASHSIZE"
+
+	    case $? in
+		0)
+		    ;;
+		*)
+		    echo "failed"
+		    exit 1
+	    esac
+	    echo""
+
+	    echo "$PRODUCT-v$VERSION" serial "$serial" is ready to ship
+	    ret=0
+	    ;;
+    esac
+done

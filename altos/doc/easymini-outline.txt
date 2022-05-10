@@ -1,0 +1,13 @@
+:notitle:
+:doctype: article
+
+== EasyMini/EasyMotor/EasyTimer Outline and Hole Pattern
+	This image, when printed, provides a precise template for the
+	mounting holes in EasyMini, EasyMotor, and EasyTimer.  Each of 
+	these products has overall dimensions of 0.800 x 1.500 inches, 
+	and the mounting holes are 0.125 inches from each board edge.
+	That means the mounting holes are in a rectangle measuring
+	0.550 x 1.250 inches apart, sized for use with 4-40 or M3 screws.
+
+	image::easymini.svg[align="center"]
+

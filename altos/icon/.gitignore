@@ -1,0 +1,15 @@
+application-*.png
+altusmetrum-*.png
+altusmetrum.xpm
+application-vnd.altusmetrum.micropeak.svg
+*.rc
+*.ico
+*.icns
+*.build
+*.exe
+*led.png
+*on.png
+*off.png
+*led.svg
+*on.svg
+*off.svg

@@ -1,0 +1,52 @@
+#!/bin/sh
+
+VERSION=4.0
+REPO=~/altusmetrumllc/Binaries
+PRODUCT=TeleBT
+
+ALTOS_FILE=$REPO/telebt-v$VERSION-*.elf
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+dev_serial=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { printf("%s %s\n", $3, $2); exit(0); }'`
+dev=`echo $dev_serial | awk '{print $1;}'`
+serial=`echo $dev_serial | awk '{print $2;}'`
+
+case "$dev" in
+/dev/tty*)
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+rfcal=`wget -O - -q 'http://altusmetrum.org/cgi-bin/unitinfo.cgi?sn='$serial | jq '.unitinfo.rfcal | tonumber'`
+
+case $? in
+0)
+	;;
+*)
+	echo "Fetch rfcal for $serial failed"
+	exit 1
+	;;
+esac
+
+case "$rfcal" in
+[0-9]*)
+	;;
+*)
+	echo "Serial $serial: invalid rfcal $rfcal"
+	;;
+esac
+
+echo "$PRODUCT"'-v'"$VERSION $serial $dev rfcal $rfcal"
+
+$USBLOAD --cal=$rfcal --tty=$dev $ALTOS_FILE || exit 1
+
+echo "$PRODUCT"'-v'"$VERSION $serial $dev is ready to ship"

@@ -1,0 +1,203 @@
+!addplugindir ../altosui/Instdrv/NSIS/Plugins
+!addincludedir ../altosui/Instdrv/NSIS/Includes
+!include x64.nsh
+!include java.nsh
+!include refresh-sh.nsh
+
+!define REG_NAME	"MicroPeak"
+!define PROG_ID		"org.altusmetrum.micropeak.1"
+!define PROG_ID_MPD	"org.altusmetrum.micropeak.mpd.1"
+!define FAT_NAME	"micropeak-fat.jar"
+!define WIN_APP_ICON	"altusmetrum-micropeak.ico"
+!define WIN_APP_EXE	"altusmetrum-micropeak.exe"
+!define WIN_MPD_EXE	"application-vnd.altusmetrum.micropeak.exe"
+
+Name "${REG_NAME} Installer"
+
+; Default install directory
+InstallDir "$PROGRAMFILES\AltusMetrum"
+
+; Tell the installer where to re-install a new version
+InstallDirRegKey HKLM "Software\${REG_NAME}" "Install_Dir"
+
+LicenseText "GNU General Public License Version 2"
+LicenseData "../COPYING"
+
+; Need admin privs for Vista or Win7
+RequestExecutionLevel admin
+
+ShowInstDetails Show
+
+ComponentText "${REG_NAME} Software and Driver Installer"
+
+Function .onInit
+	DetailPrint "Checking host operating system"
+	${If} ${RunningX64}
+		DetailPrint "Installer running on 64-bit host"
+		SetRegView 64
+		StrCpy $INSTDIR "$PROGRAMFILES64\AltusMetrum"
+		${DisableX64FSRedirection}
+	${EndIf}
+FunctionEnd
+
+Function un.onInit
+	DetailPrint "Checking host operating system"
+	${If} ${RunningX64}
+		DetailPrint "Installer running on 64-bit host"
+		SetRegView 64
+		StrCpy $INSTDIR "$PROGRAMFILES64\AltusMetrum"
+		${DisableX64FSRedirection}
+	${EndIf}
+FunctionEnd
+
+; Pages to present
+
+Page license
+Page components
+Page directory
+Page instfiles
+
+UninstPage uninstConfirm
+UninstPage instfiles
+
+; And the stuff to install
+
+Section "Install Driver" InstDriver
+
+	InstDrv::InitDriverSetup /NOUNLOAD {4D36E96D-E325-11CE-BFC1-08002BE10318} AltusMetrumSerial
+	Pop $0
+	DetailPrint "InitDriverSetup: $0"
+	InstDrv::DeleteOemInfFiles /NOUNLOAD
+	InstDrv::CreateDevice /NOUNLOAD
+
+	SetOutPath $INSTDIR
+	File "../altusmetrum.inf"
+	File "../altusmetrum.cat"
+
+	${DisableX64FSRedirection}
+	IfFileExists $WINDIR\System32\PnPutil.exe 0 nopnp
+		${DisableX64FSRedirection}
+		nsExec::ExecToLog '"$WINDIR\System32\PnPutil.exe" -i -a "$INSTDIR\altusmetrum.inf"'
+		Goto done
+nopnp:
+		InstDrv::InstallDriver /NOUNLOAD "$INSTDIR\altusmetrum.inf"
+done:
+
+SectionEnd
+
+Section "${REG_NAME} Application"
+	Call DetectJRE
+
+	SetOutPath $INSTDIR
+
+	File "${FAT_NAME}"
+	File "altoslib_@ALTOSLIB_VERSION@.jar"
+	File "altosuilib_@ALTOSUILIB_VERSION@.jar"
+	File "jfreechart.jar"
+	File "jcommon.jar"
+	File "../icon/${WIN_APP_EXE}"
+
+	File "*.dll"
+
+	File "../icon/${WIN_APP_ICON}"
+
+	CreateShortCut "$SMPROGRAMS\${REG_NAME}.lnk" "$INSTDIR\${WIN_APP_EXE}" "" "$INSTDIR\${WIN_APP_ICON}"
+SectionEnd
+
+Section "${REG_NAME} Desktop Shortcut"
+	CreateShortCut "$DESKTOP\${REG_NAME}.lnk" "$INSTDIR\${WIN_APP_EXE}"  "" "$INSTDIR\${WIN_APP_ICON}"
+SectionEnd
+
+Section "FTDI USB Driver"
+	SetOutPath $INSTDIR
+
+	File "CDM_v2.12.00_WHQL_Certified.exe"
+
+	StrCpy $2 "$INSTDIR\CDM_v2.12.00_WHQL_Certified.exe"
+	ExecWait $2
+SectionEnd
+
+Section "Documentation"
+
+	SetOutPath $INSTDIR
+
+	File "../doc/micropeak.pdf"
+SectionEnd
+
+Section "File Associations"
+
+	${DisableX64FSRedirection}
+
+	SetOutPath $INSTDIR
+
+	File "../icon/${WIN_MPD_EXE}"
+
+	; application elements
+	
+	DeleteRegKey HKCR "${PROG_ID}"
+	DeleteRegKey HKCR "${PROG_ID_MPD}"
+
+	WriteRegStr HKCR "${PROG_ID_MPD}"		""				"MicroPeak Data File"
+	WriteRegStr HKCR "${PROG_ID_MPD}"		"FriendlyTypeName"		"MicroPeak Data File"
+	WriteRegStr HKCR "${PROG_ID_MPD}\CurVer"	""				"${PROG_ID_MPD}"
+	WriteRegStr HKCR "${PROG_ID_MPD}\DefaultIcon"	""				'"$INSTDIR\${WIN_MPD_EXE}",-101'
+  WriteRegExpandStr HKCR "${PROG_ID_MPD}\shell\play\command" ""				'"$INSTDIR\${WIN_APP_EXE}" "%1"'
+
+	; .mpd elements
+
+	WriteRegStr HKCR ".mpd"				""				"${PROG_ID_MPD}"
+	WriteRegStr HKCR ".mpd"				"PerceivedType"			"MicroPeak Data File"
+	WriteRegStr HKCR ".mpd"				"Content Type"			"application/vnd.altusmetrum.micropeak"
+
+	WriteRegStr HKCR ".mpd\OpenWithProgids"		"${PROG_ID_MPD}"			""
+	WriteRegStr HKCR ".mpd\${PROG_ID_MPD}"		""				"${REG_NAME}"
+
+	Call RefreshShellIcons
+SectionEnd
+	
+Section "Uninstaller"
+
+	; Deal with the uninstaller
+
+	${DisableX64FSRedirection}
+	SetOutPath $INSTDIR
+
+	; Write the install path to the registry
+	WriteRegStr HKLM "SOFTWARE\${REG_NAME}" "Install_Dir" "$INSTDIR"
+
+	; Write the uninstall keys for windows
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "DisplayName" "${REG_NAME}"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "UninstallString" '"$INSTDIR\uninstall-${REG_NAME}.exe"'
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "NoModify" "1"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}" "NoRepair" "1"
+
+	WriteUninstaller "uninstall-${REG_NAME}.exe"
+SectionEnd
+
+Section "Uninstall"
+
+	${DisableX64FSRedirection}
+
+	DeleteRegKey   HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${REG_NAME}"
+	DeleteRegKey   HKLM "SOFTWARE\${REG_NAME}"
+
+	DetailPrint "Delete uninstall reg entries"
+
+	DeleteRegKey   HKCR "${PROG_ID}"
+	DeleteRegKey   HKCR "${PROG_ID_MPD}"
+
+	DeleteRegKey   HKCR ".mpd\${PROG_ID_MPD}"
+	DeleteRegValue HKCR ".mpd\OpenWithProgids" "${PROG_ID_MPD}"
+
+	Delete "$INSTDIR\${FAT_NAME}"
+	Delete "$INSTDIR\uninstall-${REG_NAME}.exe"
+
+	Delete "$INSTDIR\${WIN_APP_ICON}"
+	Delete "$INSTDIR\${WIN_APP_EXE}"
+
+	; Remove shortcuts, if any
+	Delete "$SMPROGRAMS\${REG_NAME}.lnk"
+	Delete "$DESKTOP\${REG_NAME}.lnk"
+	
+	Call un.RefreshShellIcons
+SectionEnd

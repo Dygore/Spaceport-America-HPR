@@ -1,0 +1,96 @@
+#!/bin/sh
+
+if [ -x /usr/bin/dfu-util ]; then
+    DFU_UTIL=/usr/bin/dfu-util
+else
+    echo "Can't find dfu-util! Aborting."
+    exit 1
+fi
+
+if [ -x /usr/bin/ao-usbload ]; then
+	USBLOAD=/usr/bin/ao-usbload
+else
+	echo "Can't find ao-usbload!  Aborting."
+	exit 1
+fi
+
+VERSION=4.0
+REPO=~/altusmetrumllc/Binaries
+PRODUCT=TeleBT
+
+echo "$PRODUCT v$VERSION Turn-On and Calibration Program"
+echo "Copyright 2017 by Bdale Garbee.  Released under GPL v3+"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION attached by USB"
+echo "\t\twith coax from UHF to frequency counter"
+echo
+
+case $# in
+    1)
+        SERIAL="$1"
+        echo "$PRODUCT-$VERSION serial number: $SERIAL" 
+        ;;
+    0)
+        echo -n "$PRODUCT-$VERSION serial number: "
+        read SERIAL
+        ;;
+    *)
+        echo "Usage: $0 <serial-number>" 1>&2
+        exit 1;
+        ;;
+esac
+
+FLASH_FILE=$REPO/loaders/telebt-v$VERSION-altos-flash-*.bin
+ALTOS_FILE=$REPO/telebt-v$VERSION-*.elf
+
+$DFU_UTIL -a 0 -s 0x08000000:leave -D $FLASH_FILE
+
+sleep 2
+
+$USBLOAD --serial=$SERIAL $ALTOS_FILE || exit 1
+
+sleep 3
+
+dev=`ao-list | awk '/'"$PRODUCT"'-v'"$VERSION"'/ { print $3; exit(0); }'`
+
+case "$dev" in
+/dev/tty*)
+	echo "$PRODUCT found on $dev"
+	;;
+*)
+	echo 'No '"$PRODUCT"'-v'"$VERSION"' found'
+	exit 1
+	;;
+esac
+
+CALFILE=cal-$SERIAL.txt
+
+../ao-tools/ao-cal-freq/ao-cal-freq --nosave --output=$CALFILE --tty=$dev
+
+CAL_VALUE=`cat $CALFILE`
+echo $SERIAL","$CAL_VALUE >> cal_values
+echo "Reflashing with calibration: $CAL_VALUE"
+$USBLOAD --cal=$CAL_VALUE --tty=$dev $ALTOS_FILE || exit 1
+
+echo -n "checking BlueTooth functionality... "
+btdev=`hcitool scan | awk -F \- '/TeleBT/ { print $2 }'`
+if [ "$btdev" = "$SERIAL" ]; then
+	echo "working!"
+else
+	echo "device not found"
+	exit 1
+fi
+
+echo -n "checking BTLE functionality... "
+btdev=`sudo timeout -s SIGINT 5s hcitool lescan | awk -F \- '/TeleBT/ { print $2 }' | head -n 1`
+if [ "$btdev" = "$SERIAL" ]; then
+	echo "working!"
+else
+	echo "device not found"
+	exit 1
+fi
+
+echo "$PRODUCT-v$VERSION $SERIAL is ready to ship"
+
+exit $?

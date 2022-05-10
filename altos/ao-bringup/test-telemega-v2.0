@@ -1,0 +1,67 @@
+#!/bin/sh
+
+VERSION=2.0
+PRODUCT=TeleMega
+BASE=`echo $PRODUCT | tr 'A-Z' 'a-z'`
+
+echo "$PRODUCT-v$VERSION Test Program"
+echo "Copyright 2014 by Keith Packard.  Released under GPL v2"
+echo
+echo "Expectations:"
+echo "\t$PRODUCT v$VERSION powered from USB"
+echo
+
+ret=1
+ao-list | while read product serial dev; do
+    case "$product" in
+	"$PRODUCT-v$VERSION")
+
+	    echo "Testing $product $serial $dev"
+
+	    ./test-igniters $dev main drogue 3 0 1 2
+	    echo""
+
+	    echo "Testing baro sensor"
+	    ../ao-tools/ao-test-baro/ao-test-baro --tty="$dev"
+
+	    case $? in
+		0)
+		    ;;
+		*)
+		    echo "failed"
+		    exit 1
+	    esac
+	    echo""
+
+	    FLASHSIZE=8388608
+
+	    echo "Testing flash"
+	    ../ao-tools/ao-test-flash/ao-test-flash --tty="$dev" "$FLASHSIZE"
+
+	    case $? in
+		0)
+		    ;;
+		*)
+		    echo "failed"
+		    exit 1
+	    esac
+	    echo""
+
+	    echo "Testing GPS"
+	    ../ao-tools/ao-test-gps/ao-test-gps --tty="$dev"
+
+	    case $? in
+		0)
+		    ;;
+		*)
+		    echo "failed"
+		    exit 1
+	    esac
+	    echo""
+
+	    echo "$PRODUCT-v$VERSION" serial "$serial" is ready to ship
+	    echo "\007"
+	    ret=0
+	    ;;
+    esac
+done
