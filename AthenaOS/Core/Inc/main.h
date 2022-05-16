@@ -49,8 +49,6 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -106,6 +104,7 @@ void Error_Handler(void);
 #define Extra_SDA_Pin GPIO_PIN_7
 #define Extra_SDA_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+void delay (uint16_t us);
 
 /* USER CODE END Private defines */
 

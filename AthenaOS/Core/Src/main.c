@@ -26,6 +26,11 @@
 #include "Stepper.h"
 #include "Status_LED.h"
 
+#include "usbd_cdc_if.h"
+
+#include "string.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,6 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+double VBatt = 0;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -67,7 +73,8 @@ static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+void startup(void);
+void buzz(int freq, int duration);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -82,6 +89,7 @@ static void MX_TIM2_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
 
 	HAL_GPIO_WritePin(GPIOB, Step_PWM_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, Step_EN_Pin, GPIO_PIN_SET);
@@ -115,22 +123,33 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-  //stepper_Step (1, 50); //Step in direction 1, 50 steps
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+  HAL_TIM_Base_Start(&htim2);
+
+  startup();
+
+  char txBuff[25];
+
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  sprintf(txBuff, "Battery Voltage: %fV\n", VBatt);
+
 	  status_LED_Swap();
-	  HAL_Delay(50);
+	  HAL_Delay(100);
 	  status_LED_Swap();
-	  HAL_Delay(50);
+	  HAL_Delay(100);
+
+	  CDC_Transmit_FS((uint8_t *)txBuff, strlen(txBuff));
   }
   /* USER CODE END 3 */
 }
@@ -400,9 +419,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 72-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
+  htim2.Init.Period = 0xffff-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -435,7 +454,6 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
-  HAL_TIM_MspPostInit(&htim2);
 
 }
 
@@ -462,6 +480,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Step_DIR_Pin|Step_PWM_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : Flash_CS_Pin Extra_out_Pin Step_EN_Pin */
@@ -484,6 +505,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : Buzz_PWM_Pin */
+  GPIO_InitStruct.Pin = Buzz_PWM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(Buzz_PWM_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : SD_CS_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -494,6 +522,110 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void delay (uint16_t us)
+{
+  __HAL_TIM_SET_COUNTER(&htim2, 0);
+  while (__HAL_TIM_GET_COUNTER(&htim2) < us);
+}
+
+void startup(void){
+	double f = 256.41;
+	for(int i = 0; i < 5; i++){
+			for(int i = 0; i < 500; i++){
+				HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+				delay(f*0.5);
+				HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+				delay(f*0.5);
+			}
+			HAL_Delay(100);
+	}
+
+	HAL_Delay(1000);
+
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+
+	VBatt = (((double)HAL_ADC_GetValue(&hadc1)*2)/4095)*3.3;
+
+	f = 250;
+	for(int i = 0; i < (int)VBatt; i++){
+		for(int i = 0; i < 700; i++){
+			HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+			delay(f*0.60);
+			HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+			delay(f*0.40);
+		}
+		HAL_Delay(400);
+	}
+
+	HAL_Delay(600);
+
+	f = 250;
+	for(int i = 0; i < (int)((VBatt-(int)VBatt)*10); i++){
+		for(int i = 0; i < 700; i++){
+			HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+			delay(f*0.60);
+			HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+			delay(f*0.40);
+		}
+		HAL_Delay(400);
+	}
+
+	HAL_Delay(1000);
+
+	f = 256.41;
+	for(int i = 0; i < 500; i++){
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+		delay(f*0.60);
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+		delay(f*0.40);
+	}
+
+	HAL_Delay(100);
+
+	f = 250;
+	for(int i = 0; i < 500; i++){
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+		delay(f*0.60);
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+		delay(f*0.40);
+	}
+
+	HAL_Delay(100);
+
+	f = 243.9;
+	for(int i = 0; i < 500; i++){
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+		delay(f*0.60);
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+		delay(f*0.40);
+	}
+
+	HAL_Delay(100);
+
+	f = 238.095;
+	for(int i = 0; i < 500; i++){
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+		delay(f*0.60);
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+		delay(f*0.40);
+	}
+
+	HAL_Delay(100);
+
+	stepper_Step (1, 50); //Step in direction 1, 50 steps
+	stepper_Step (0, 50); //Step in direction 0, 50 steps
+
+	f = 232.55814;
+	for(int i = 0; i < 10000; i++){
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_SET);
+		delay(f*0.60);
+		HAL_GPIO_WritePin(Buzz_PWM_GPIO_Port, Buzz_PWM_Pin, GPIO_PIN_RESET);
+		delay(f*0.40);
+	}
+
+	HAL_Delay(100);
+}
 
 /* USER CODE END 4 */
 
