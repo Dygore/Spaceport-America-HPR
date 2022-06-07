@@ -25,10 +25,13 @@
 
 #include "Stepper.h"
 #include "Status_LED.h"
+#include "flash.h"
 
 #include "usbd_cdc_if.h"
 
 #include "string.h"
+
+#include <stdio.h>
 
 
 /* USER CODE END Includes */
@@ -133,8 +136,13 @@ int main(void)
 
   startup();
 
-  char txBuff[25];
+  uint8_t grid[5] = {0x00, 0x01, 0x02, 0x03, 0x04};
 
+  flashWriteArray(0x00, 0x00, 0x00, grid, 4);
+
+  HAL_Delay(50);
+
+  char txBuff[105];
 
   while (1)
   {
@@ -142,14 +150,14 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  sprintf(txBuff, "Battery Voltage: %fV\n", VBatt);
+	 sprintf(txBuff, "Read Data Addr1: %X, Read Data Addr2: %X, Read Data Addr3: %X, Read Data Addr4: %X, Read Data Addr5: %X\n", flashRead(0x00, 0x00, 0x00), flashRead(0x00, 0x00, 0x01), flashRead(0x00, 0x00, 0x02), flashRead(0x00, 0x00, 0x03), flashRead(0x00, 0x00, 0x04));
 
-	  status_LED_Swap();
-	  HAL_Delay(100);
-	  status_LED_Swap();
-	  HAL_Delay(100);
+	 status_LED_Swap();
+	 HAL_Delay(100);
+	 status_LED_Swap();
+	 HAL_Delay(100);
 
-	  CDC_Transmit_FS((uint8_t *)txBuff, strlen(txBuff));
+	 CDC_Transmit_FS((uint8_t *)txBuff, strlen(txBuff));
   }
   /* USER CODE END 3 */
 }
@@ -346,7 +354,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -611,9 +619,20 @@ void startup(void){
 		delay(f*0.40);
 	}
 
-	HAL_Delay(100);
+	HAL_Delay(1000);
 
 	stepper_Step (1, 50); //Step in direction 1, 50 steps
+
+	HAL_Delay(1000);
+
+	stepper_Step (1, 50); //Step in direction 1, 50 steps
+
+	HAL_Delay(1000);
+
+	stepper_Step (0, 50); //Step in direction 0, 50 steps
+
+	HAL_Delay(1000);
+
 	stepper_Step (0, 50); //Step in direction 0, 50 steps
 
 	f = 232.55814;
@@ -625,6 +644,13 @@ void startup(void){
 	}
 
 	HAL_Delay(100);
+}
+
+uint8_t W25Q_Spi(uint8_t Data)
+{
+	uint8_t ret;
+	HAL_SPI_TransmitReceive(&hspi2, &Data, &ret, 1, HAL_MAX_DELAY);
+	return ret;
 }
 
 /* USER CODE END 4 */

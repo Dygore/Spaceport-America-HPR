@@ -20,9 +20,9 @@ void stepper_Step (int dir, int step){
 
 	for(int i = 0; i < step; i++){
 		HAL_GPIO_WritePin(GPIOB, Step_PWM_Pin, GPIO_PIN_RESET);
-		delay(200);
+		delay(500);
 		HAL_GPIO_WritePin(GPIOB, Step_PWM_Pin, GPIO_PIN_SET);
-		delay(200);
+		delay(500);
 	}
 
 	HAL_GPIO_WritePin(GPIOC, Step_EN_Pin, GPIO_PIN_SET);

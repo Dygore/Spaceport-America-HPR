@@ -1,0 +1,11 @@
+../Core/Src/flash.c:11:6:checkBusyRead	8	static
+../Core/Src/flash.c:21:6:checkBusyWrite	8	static
+../Core/Src/flash.c:31:6:writeEnable	8	static
+../Core/Src/flash.c:39:6:writeDisable	8	static
+../Core/Src/flash.c:47:9:flash_readID	16	static
+../Core/Src/flash.c:69:9:flashRead	24	static
+../Core/Src/flash.c:93:6:flashWriteSingle	24	static
+../Core/Src/flash.c:118:6:flashWriteArray	24	static
+../Core/Src/flash.c:145:6:flashClearLookup	8	static
+../Core/Src/flash.c:167:6:flashClearStorage	8	static
+../Core/Src/flash.c:189:6:flashClearAll	8	static
